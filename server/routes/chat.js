@@ -53,7 +53,7 @@ router.get("/", async (req, res) => {
     });
 
   } catch (err) {
-    console.error("❌ /chat error:", err);
+    console.error(" /chat error:", err);
     res.status(500).json({ error: err.toString() });
   }
 });
