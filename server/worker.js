@@ -10,10 +10,10 @@ import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 
 console.log("GOOGLE KEY:", process.env.GOOGLE_API_KEY ? "FOUND" : "NOT FOUND");
 
-// ✅ HELPER: Sleep function for rate limiting
+// HELPER: Sleep function for rate limiting
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// ✅ HELPER: Split text into chunks for large PDFs
+// HELPER: Split text into chunks
 async function getTextChunks(text, chunkSize = 5000, overlap = 500) {
   const chunks = [];
   for (let i = 0; i < text.length; i += chunkSize - overlap) {
@@ -22,7 +22,7 @@ async function getTextChunks(text, chunkSize = 5000, overlap = 500) {
   return chunks;
 }
 
-// ✅ HELPER: Parse JSON response from LLM (robust)
+// HELPER: Parse JSON response from LLM
 function parseJSONResponse(response) {
   let rawContent = "";
   
@@ -47,39 +47,49 @@ function parseJSONResponse(response) {
 const worker = new Worker(
   "file-upload-queue",
   async (job) => {
-    console.log("📂 New Job Received:", job.data);
-    const data = typeof job.data === "string" ? JSON.parse(job.data) : job.data;
+    try {
+      console.log("New Job Received:", job.data);
+      const data = typeof job.data === "string" ? JSON.parse(job.data) : job.data;
 
-    // ===== SUMMARISER JOB =====
-    if (data.jobType === "summarize") {
-      console.log("🔍 Processing SUMMARISATION job...");
+      // ===== SUMMARISER JOB =====
+      if (data.jobType === "summarize") {
+        console.log("Processing SUMMARISATION job...");
 
-      const buffer = fs.readFileSync(data.path);
-      const parsed = await pdf(buffer);
-      const pdfText = parsed.text;
-      const textLength = pdfText.length;
+        let sourceText = "";
 
-      console.log(`✅ PDF Loaded — Text length: ${textLength} chars`);
+        // Determine source: YouTube/Text input or PDF file
+        if (data.text) {
+          sourceText = data.text;
+          console.log("Summarise: Using text input. Length:", sourceText.length);
+        } else if (data.path) {
+          const buffer = fs.readFileSync(data.path);
+          const parsed = await pdf(buffer);
+          sourceText = parsed.text;
+          console.log("Summarise: Using PDF input. Length:", sourceText.length);
+        } else {
+          throw new Error("No text or PDF path provided for summarisation");
+        }
 
-      const llm = new ChatGoogleGenerativeAI({
-        model: "gemini-2.0-flash-lite",
-        maxRetries: 1,
-        temperature: 0.3,
-        apiKey: process.env.GOOGLE_API_KEY,
-      });
+        const textLength = sourceText.length;
+        const llm = new ChatGoogleGenerativeAI({
+          model: "gemini-2.0-flash-lite",
+          maxRetries: 1,
+          temperature: 0.3,
+          apiKey: process.env.GOOGLE_API_KEY,
+        });
 
-      let summaryData;
+        let summaryData;
 
-      // ✅ SMALL PDF: Send all at once
-      if (textLength < 10000) {
-        console.log("📄 Small PDF - Summarizing directly...");
+        // Small input: summarize directly
+        if (textLength < 10000) {
+          console.log("Small input - Summarizing directly...");
 
-        const summaryPrompt = `You are an expert document summarizer. Analyze the following document and provide:
+          const summaryPrompt = `You are an expert document summarizer. Analyze the following document and provide:
 1. A concise summary (3-5 sentences)
 2. 5-7 key points as a bulleted list
 
 Document:
-${pdfText}
+${sourceText}
 
 Respond in this exact JSON format ONLY:
 {
@@ -87,138 +97,137 @@ Respond in this exact JSON format ONLY:
   "key_points": ["point 1", "point 2", "point 3", "point 4", "point 5"]
 }`;
 
-        const response = await llm.invoke([
-          ["system", "You are a professional summarizer. Always respond with ONLY valid JSON."],
-          ["human", summaryPrompt]
-        ]);
+          const response = await llm.invoke([
+            ["system", "You are a professional summarizer. Always respond with ONLY valid JSON."],
+            ["human", summaryPrompt]
+          ]);
 
-        const jsonString = parseJSONResponse(response);
-        console.log("📝 Parsing response...");
+          const jsonString = parseJSONResponse(response);
+          console.log("Parsing summary response...");
 
-        try {
-          summaryData = JSON.parse(jsonString);
-          console.log("✅ Successfully parsed JSON");
-        } catch (e) {
-          console.error("⚠️ JSON parse error:", e.message);
-          summaryData = {
-            summary: jsonString,
-            key_points: ["Summary generated (parse fallback)"]
-          };
-        }
-      }
-      // ✅ LARGE PDF: Chunk and aggregate
-      else {
-        console.log("📚 Large PDF - Using chunked summarization...");
-
-        const chunks = await getTextChunks(pdfText, 5000, 500);
-        console.log(`📊 Split into ${chunks.length} chunks`);
-
-        let chunkSummaries = [];
-        
-        // Summarize each chunk
-        for (let i = 0; i < chunks.length; i++) {
           try {
-            const chunkResponse = await llm.invoke([
-              ["system", "Summarize this section briefly in 2-3 sentences."],
-              ["human", chunks[i]]
+            summaryData = JSON.parse(jsonString);
+            console.log("Successfully parsed summary JSON");
+          } catch (e) {
+            console.error("JSON parse error:", e.message);
+            summaryData = {
+              summary: jsonString,
+              key_points: ["Summary generated (parse fallback)"]
+            };
+          }
+        }
+        // Large input: chunk and aggregate
+        else {
+          console.log("Large input - Using chunked summarization...");
+
+          const chunks = await getTextChunks(sourceText, 5000, 500);
+          console.log(`Split into ${chunks.length} chunks`);
+
+          let chunkSummaries = [];
+          
+          for (let i = 0; i < chunks.length; i++) {
+            try {
+              const chunkResponse = await llm.invoke([
+                ["system", "Summarize this section briefly in 2-3 sentences."],
+                ["human", chunks[i]]
+              ]);
+
+              const summaryText = typeof chunkResponse === "string" 
+                ? chunkResponse 
+                : chunkResponse.content || JSON.stringify(chunkResponse);
+              
+              chunkSummaries.push(summaryText);
+              console.log(`Chunk ${i + 1}/${chunks.length} summarized`);
+
+              if ((i + 1) % 3 === 0) {
+                console.log("Rate limiting pause...");
+                await sleep(2000);
+              }
+            } catch (err) {
+              console.error(`Error summarizing chunk ${i + 1}:`, err.message);
+              chunkSummaries.push(`[Error summarizing chunk ${i + 1}]`);
+            }
+          }
+
+          const allSummaries = chunkSummaries.join("\n\n");
+
+          const aggregatePrompt = `Based on these section summaries, create:
+1. A comprehensive overall summary (3-5 sentences)
+2. 5-7 key points for the entire document
+
+Section Summaries:
+${allSummaries}
+
+Respond in this exact JSON format ONLY:
+{
+  "summary": "comprehensive summary here",
+  "key_points": ["point 1", "point 2", ...]
+}`;
+
+          try {
+            const finalResponse = await llm.invoke([
+              ["system", "You are a professional summarizer. Always respond with ONLY valid JSON."],
+              ["human", aggregatePrompt]
             ]);
 
-            const summaryText = typeof chunkResponse === "string" 
-              ? chunkResponse 
-              : chunkResponse.content || JSON.stringify(chunkResponse);
-            
-            chunkSummaries.push(summaryText);
-            console.log(`✅ Chunk ${i + 1}/${chunks.length} summarized`);
-
-            // Rate limiting: wait between requests to avoid hitting limits
-            if ((i + 1) % 3 === 0) {
-              console.log("⏸️ Rate limiting pause...");
-              await sleep(2000);
-            }
-          } catch (err) {
-            console.error(`❌ Error summarizing chunk ${i + 1}:`, err.message);
-            chunkSummaries.push(`[Error summarizing chunk ${i + 1}]`);
+            const jsonString = parseJSONResponse(finalResponse);
+            console.log("Parsing aggregated response...");
+            summaryData = JSON.parse(jsonString);
+            console.log("Successfully parsed aggregated JSON");
+          } catch (e) {
+            console.error("Aggregation error:", e.message);
+            summaryData = {
+              summary: allSummaries.substring(0, 1000),
+              key_points: chunkSummaries.slice(0, 5)
+            };
           }
         }
 
-        // Aggregate chunk summaries
-        const allSummaries = chunkSummaries.join("\n\n");
+        console.log("Summary Generated");
 
-        const aggregatePrompt = `Based on these section summaries, create:
-        1. A comprehensive overall summary (3-5 sentences)
-        2. 5-7 key points for the entire document
-
-        Section Summaries:
-        ${allSummaries}
-
-         Respond in this exact JSON format ONLY:
-        {
-       "summary": "comprehensive summary here",
-        "key_points": ["point 1", "point 2", ...]
-       }`;
-
-        try {
-          const finalResponse = await llm.invoke([
-            ["system", "You are a professional summarizer. Always respond with ONLY valid JSON."],
-            ["human", aggregatePrompt]
-          ]);
-
-          const jsonString = parseJSONResponse(finalResponse);
-          console.log("📝 Parsing aggregated response...");
-          summaryData = JSON.parse(jsonString);
-          console.log("✅ Successfully parsed aggregated JSON");
-        } catch (e) {
-          console.error("⚠️ Aggregation error:", e.message);
-          summaryData = {
-            summary: allSummaries.substring(0, 1000),
-            key_points: chunkSummaries.slice(0, 5)
-          };
-        }
+        return {
+          summary: summaryData.summary,
+          key_points: summaryData.key_points,
+          fileName: data.filename,
+          textLength: textLength
+        };
       }
 
-      console.log("✅ Summary Generated");
+      // ===== QUIZ GENERATOR JOB =====
+      if (data.jobType === "quiz") {
+        try {
+          let sourceText = "";
 
-      return {
-        summary: summaryData.summary,
-        key_points: summaryData.key_points,
-        fileName: data.filename,
-        textLength: textLength
-      };
-    }
+          // Determine source: YouTube/Text input or PDF file
+          if (data.text) {
+            sourceText = data.text;
+            console.log("Quiz: Using text input. Length:", sourceText.length);
+          } else if (data.path) {
+            const buffer = fs.readFileSync(data.path);
+            const parsed = await pdf(buffer);
+            sourceText = parsed.text;
+            console.log("Quiz: Using PDF input. Length:", sourceText.length);
+          } else {
+            throw new Error("No text or PDF path provided for quiz");
+          }
 
-    // ===== QUIZ GENERATOR JOB =====
-if (data.jobType === "quiz") {
-  try {
-    let sourceText = "";
+          const textLength = sourceText.length;
+          console.log("Text length:", textLength, "chars");
 
-    // Detect if this is a text quiz (else use PDF)
-    if (data.text) {
-      sourceText = data.text;
-      console.log("Quiz job: Using text input. Length:", sourceText.length);
-    } else {
-      const buffer = fs.readFileSync(data.path);
-      const parsed = await pdf(buffer);
-      sourceText = parsed.text;  // ✅ NO 'const' here!
-      console.log("Quiz job: Using PDF input. Length:", sourceText.length);
-    }
+          const llm = new ChatGoogleGenerativeAI({
+            model: "gemini-2.0-flash-lite",
+            maxRetries: 1,
+            temperature: 0.5,
+            apiKey: process.env.GOOGLE_API_KEY,
+          });
 
-    const textLength = sourceText.length;  // ✅ Define textLength here
-    console.log("Text length:", textLength, "chars");
+          let quizData;
 
-    const llm = new ChatGoogleGenerativeAI({
-      model: "gemini-2.0-flash-lite",
-      maxRetries: 1,
-      temperature: 0.5,
-      apiKey: process.env.GOOGLE_API_KEY,
-    });
+          // Small input: generate quiz directly
+          if (textLength < 15000) {
+            console.log("Small input - Generating quiz directly...");
 
-    let quizData;
-
-    // SMALL INPUT: Generate quiz directly
-    if (textLength < 15000) {
-      console.log("Small input - Generating quiz directly...");
-
-      const quizPrompt = `You are an expert quiz creator. Based on the following content, create a comprehensive quiz with 5-7 questions.
+            const quizPrompt = `You are an expert quiz creator. Based on the following content, create a comprehensive quiz with 5-7 questions.
 
 For each question:
 1. Create a clear, well-formulated question
@@ -247,43 +256,43 @@ Respond in this EXACT JSON format ONLY:
   ]
 }`;
 
-      const response = await llm.invoke([
-        ["system", "You are a professional quiz creator. Always respond with ONLY valid JSON, no markdown."],
-        ["human", quizPrompt]
-      ]);
+            const response = await llm.invoke([
+              ["system", "You are a professional quiz creator. Always respond with ONLY valid JSON, no markdown."],
+              ["human", quizPrompt]
+            ]);
 
-      const jsonString = parseJSONResponse(response);
-      console.log("Parsing quiz response...");
+            const jsonString = parseJSONResponse(response);
+            console.log("Parsing quiz response...");
 
-      try {
-        quizData = JSON.parse(jsonString);
-        console.log("Quiz JSON Parsed Successfully");
-      } catch (e) {
-        console.error("Quiz JSON Parse Error:", e.message);
-        console.log("Raw response:", jsonString.slice(0, 500));
-        quizData = {
-          questions: [
-            {
-              id: 1,
-              question: "Could not parse quiz questions. Please try again.",
-              options: { A: "A", B: "B", C: "C", D: "D" },
-              correct_answer: "A",
-              explanation: "Error in parsing: " + e.message
+            try {
+              quizData = JSON.parse(jsonString);
+              console.log("Quiz JSON Parsed Successfully");
+            } catch (e) {
+              console.error("Quiz JSON Parse Error:", e.message);
+              console.log("Raw response:", jsonString.slice(0, 500));
+              quizData = {
+                questions: [
+                  {
+                    id: 1,
+                    question: "Could not parse quiz questions. Please try again.",
+                    options: { A: "A", B: "B", C: "C", D: "D" },
+                    correct_answer: "A",
+                    explanation: "Error in parsing: " + e.message
+                  }
+                ]
+              };
             }
-          ]
-        };
-      }
-    }
-    // LARGE INPUT: Generate quiz from key sections
-    else {
-      console.log("Large input - Generating quiz from key sections...");
+          }
+          // Large input: generate quiz from key sections
+          else {
+            console.log("Large input - Generating quiz from key sections...");
 
-      const chunks = await getTextChunks(sourceText, 7000, 700);  // ✅ Use sourceText
-      console.log(`Split into ${chunks.length} chunks, using top 3 for quiz...`);
+            const chunks = await getTextChunks(sourceText, 7000, 700);
+            console.log(`Split into ${chunks.length} chunks, using top 3 for quiz...`);
 
-      const topChunks = chunks.slice(0, 3).join("\n\n[NEW SECTION]\n\n");
+            const topChunks = chunks.slice(0, 3).join("\n\n[NEW SECTION]\n\n");
 
-      const quizPrompt = `You are an expert quiz creator. Based on the following document sections, create a quiz with 5-7 questions covering the main concepts.
+            const quizPrompt = `You are an expert quiz creator. Based on the following document sections, create a quiz with 5-7 questions covering the main concepts.
 
 For each question, provide 4 multiple choice options (A, B, C, D) and mark the correct answer.
 
@@ -308,100 +317,117 @@ Respond in this EXACT JSON format ONLY:
   ]
 }`;
 
-      try {
-        const response = await llm.invoke([
-          ["system", "You are a professional quiz creator. Always respond with ONLY valid JSON, no markdown."],
-          ["human", quizPrompt]
-        ]);
+            try {
+              const response = await llm.invoke([
+                ["system", "You are a professional quiz creator. Always respond with ONLY valid JSON, no markdown."],
+                ["human", quizPrompt]
+              ]);
 
-        const jsonString = parseJSONResponse(response);
-        console.log("Parsing large PDF quiz response...");
-        quizData = JSON.parse(jsonString);
-        console.log("Large PDF Quiz Generated");
-      } catch (e) {
-        console.error("Large PDF Quiz Error:", e.message);
-        quizData = {
-          questions: [
-            {
-              id: 1,
-              question: "Quiz generation failed for large document. Try with a smaller PDF.",
-              options: { A: "A", B: "B", C: "C", D: "D" },
-              correct_answer: "A",
-              explanation: "Error: " + e.message
+              const jsonString = parseJSONResponse(response);
+              console.log("Parsing large input quiz response...");
+              quizData = JSON.parse(jsonString);
+              console.log("Large input Quiz Generated");
+            } catch (e) {
+              console.error("Large input Quiz Error:", e.message);
+              quizData = {
+                questions: [
+                  {
+                    id: 1,
+                    question: "Quiz generation failed for large document. Try with a smaller input.",
+                    options: { A: "A", B: "B", C: "C", D: "D" },
+                    correct_answer: "A",
+                    explanation: "Error: " + e.message
+                  }
+                ]
+              };
             }
-          ]
-        };
-      }
-    }
+          }
 
-    console.log("Quiz Generated");
+          console.log("Quiz Generated");
 
-    return {
-      questions: quizData.questions || [],
-      fileName: data.filename || "study-notes",
-      totalQuestions: quizData.questions?.length || 0
-    };
+          return {
+            questions: quizData.questions || [],
+            fileName: data.filename || "study-notes",
+            totalQuestions: quizData.questions?.length || 0
+          };
 
-  } catch (err) {
-    console.error("Quiz Generation Top-level Error:", err);
-    return {
-      questions: [
-        {
-          id: 1,
-          question: "Quiz generation failed: " + (err.message || "Unknown error"),
-          options: { A: "", B: "", C: "", D: "" },
-          correct_answer: "A",
-          explanation: err.stack || ""
+        } catch (err) {
+          console.error("Quiz Generation Top-level Error:", err);
+          return {
+            questions: [
+              {
+                id: 1,
+                question: "Quiz generation failed: " + (err.message || "Unknown error"),
+                options: { A: "", B: "", C: "", D: "" },
+                correct_answer: "A",
+                explanation: err.stack || ""
+              }
+            ],
+            fileName: data.filename || "study-notes",
+            totalQuestions: 1
+          };
         }
-      ],
-      fileName: data.filename || "study-notes",
-      totalQuestions: 1
-    };
-  }
+      }
+
+      // ===== RAG/Q&A JOB =====
+      if (data.jobType === "rag" || (!data.jobType && data.path)) {
+        console.log("Processing RAG/EMBEDDING job...");
+
+        console.log("RAG Job Started. data.path =", data.path);
+if (!fs.existsSync(data.path)) {
+  console.error("File does NOT exist:", data.path);
+  return { error: "File not found", filePath: data.path };
 }
 
-    // ===== RAG/Q&A JOB (Existing code) =====
-    console.log("🔍 Processing RAG/EMBEDDING job...");
 
-    const buffer = fs.readFileSync(data.path);
-    const parsed = await pdf(buffer);
-    const pdfText = parsed.text;
-    const rawDocs = [{ pageContent: pdfText, metadata: {} }];
-    console.log(`✅ PDF Loaded — Text length: ${pdfText.length}`);
+        const buffer = fs.readFileSync(data.path);
+        const parsed = await pdf(buffer);
+        const pdfText = parsed.text;
+        const rawDocs = [{ pageContent: pdfText, metadata: {} }];
+        console.log(`PDF Loaded — Text length: ${pdfText.length}`);
 
-    const splitter = new RecursiveCharacterTextSplitter({
-      chunkSize: 1000,
-      chunkOverlap: 150,
-    });
+        const splitter = new RecursiveCharacterTextSplitter({
+          chunkSize: 1000,
+          chunkOverlap: 150,
+        });
 
-    const docs = await splitter.splitDocuments(rawDocs);
-    console.log(`✂️ Total Chunks: ${docs.length}`);
+        const docs = await splitter.splitDocuments(rawDocs);
+        console.log(`Total Chunks: ${docs.length}`);
 
-    docs.forEach((d, i) => {
-      d.metadata = {
-        ...d.metadata,
-        source: data.filename,
-        loc: { pageNumber: i + 1 }
-      };
-    });
+        docs.forEach((d, i) => {
+          d.metadata = {
+            ...d.metadata,
+            source: data.filename,
+            loc: { pageNumber: i + 1 }
+          };
+        });
 
-    const embeddings = new GoogleGenerativeAIEmbeddings({
-      model: "gemini-embedding-001",
-      taskType: TaskType.RETRIEVAL_DOCUMENT,
-      apiKey: process.env.GOOGLE_API_KEY,
-      title: "PDF Document Chunk",
-    });
+        const embeddings = new GoogleGenerativeAIEmbeddings({
+          model: "gemini-embedding-001",
+          taskType: TaskType.RETRIEVAL_DOCUMENT,
+          apiKey: process.env.GOOGLE_API_KEY,
+          title: "PDF Document Chunk",
+        });
 
-    const vectorStore = await QdrantVectorStore.fromExistingCollection(
-      embeddings,
-      {
-        url: "http://localhost:6333",
-        collectionName: "langchainjs-testing",
+        const vectorStore = await QdrantVectorStore.fromExistingCollection(
+          embeddings,
+          {
+            url: "http://localhost:6333",
+            collectionName: "langchainjs-testing",
+          }
+        );
+
+        await vectorStore.addDocuments(docs);
+        console.log(`Qdrant Insert - Stored ${docs.length} chunks`);
       }
-    );
 
-    await vectorStore.addDocuments(docs);
-    console.log(`✅ Qdrant Insert ✅ Stored ${docs.length} chunks`);
+    } catch (err) {
+      console.error("Top-level job error:", err);
+      return {
+        error: err.message,
+        jobType: job.data?.jobType || 'unknown'
+      };
+    }
   },
   {
     concurrency: 10,
@@ -412,4 +438,4 @@ Respond in this EXACT JSON format ONLY:
   }
 );
 
-console.log("🔥 Worker started and listening for jobs...");
+console.log("Worker started and listening for jobs...");

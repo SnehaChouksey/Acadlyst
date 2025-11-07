@@ -7,34 +7,61 @@ import { TaskType } from "@google/generative-ai";
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
+// POST /chat (accept both POST and GET for flexibility)
+router.post("/", async (req, res) => {
   try {
-    const userQuery = req.query.message;
-    if (!userQuery) return res.status(400).json({ error: "message is required" });
+    const userQuery = req.body.query || req.body.message;
 
-    // 1. embed the user query
+    if (!userQuery || userQuery.trim().length === 0) {
+      return res.status(400).json({ error: "Query cannot be empty" });
+    }
+
+    console.log("Chat request received. Query:", userQuery);
+
+    // STEP 1: Create embeddings for query
+    console.log("STEP 1: Creating embeddings...");
     const embeddings = new GoogleGenerativeAIEmbeddings({
       model: "gemini-embedding-001",
       apiKey: process.env.GOOGLE_API_KEY,
       taskType: TaskType.RETRIEVAL_QUERY,
     });
 
-    // 2. connect qdrant
+    // STEP 2: Connect to Qdrant
+    console.log("STEP 2: Connecting to Qdrant...");
     const vectorStore = await QdrantVectorStore.fromExistingCollection(
       embeddings,
       {
-        url: process.env.QDRANT_URL, // example: "http://localhost:6333"
+        url: process.env.QDRANT_URL || "http://localhost:6333",
         collectionName: "langchainjs-testing",
       }
     );
+    console.log("STEP 2: Connected to Qdrant");
 
-    // 3. retrieve similar chunks
-    const retriever = vectorStore.asRetriever({ k: 3 });
+    // STEP 3: Retrieve similar chunks
+    console.log("STEP 3: Retrieving similar documents...");
+    const retriever = vectorStore.asRetriever({ k: 5 });
     const docs = await retriever.invoke(userQuery);
+    console.log("STEP 3: Found", docs.length, "relevant documents");
 
+    if (docs.length === 0) {
+      console.warn("No documents found");
+      return res.json({
+        answer: "I don't have information about that in the uploaded documents. Please try a different question.",
+        sources: []
+      });
+    }
+
+    docs.forEach((d, i) => {
+      console.log(`Doc ${i + 1}: ${d.pageContent.substring(0, 80)}...`);
+    });
+
+    // STEP 4: Create context
+    console.log("STEP 4: Creating context...");
     const context = docs.map((d) => d.pageContent).join("\n\n");
+    console.log("STEP 4: Context length:", context.length);
 
-    // 4. generate final answer using ChatGoogleGenerativeAI
+    // STEP 5: Generate answer using LLM
+    console.log("STEP 5: Calling Gemini LLM...");
     const llm = new ChatGoogleGenerativeAI({
       model: "gemini-2.0-flash-lite",
       maxRetries: 1,
@@ -43,19 +70,38 @@ router.get("/", async (req, res) => {
     });
 
     const response = await llm.invoke([
-      ["system", "Answer strictly using the given context below. If not in context, say 'I don't know'."],
+      ["system", "Answer strictly using the given context. If information is not in the context, say 'I don't have that information in the documents.'"],
       ["human", `Context:\n${context}\n\nQuestion: ${userQuery}`],
     ]);
 
+    console.log("STEP 5: LLM response received");
+    
+    const answer = typeof response === 'string' 
+      ? response 
+      : (response.content || JSON.stringify(response));
+
+    console.log("Chat completed successfully");
     return res.json({
-      answer: response.content,
-      sources: docs
+      answer: answer,
+      sources: docs.map(d => ({
+        content: d.pageContent.substring(0, 200),
+        metadata: d.metadata
+      }))
     });
 
   } catch (err) {
-    console.error(" /chat error:", err);
-    res.status(500).json({ error: err.toString() });
+    console.error("Chat error:", err);
+    return res.status(500).json({
+      error: err.message,
+      answer: "Sorry, an error occurred while processing your question."
+    });
   }
+});
+
+// Also support GET for testing
+router.get("/", async (req, res) => {
+  req.body = { query: req.query.message };
+  return router._router.stack.find(r => r.route?.methods?.post)?._callbacks?.[0](req, res);
 });
 
 export default router;

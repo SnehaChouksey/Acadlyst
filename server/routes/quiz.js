@@ -1,14 +1,12 @@
 import express from "express";
 import multer from "multer";
 import { Queue } from "bullmq";
+import { getYouTubeTranscript } from "../services/youtubeService.js"; // NEW
 
 const router = express.Router();
 
 const queue = new Queue("file-upload-queue", {
-  connection: {
-    host: "localhost",
-    port: 6379,
-  },
+  connection: { host: "localhost", port: 6379 },
 });
 
 const storage = multer.diskStorage({
@@ -21,7 +19,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// POST /quiz/pdf - Upload PDF and generate quiz
+// POST /quiz/pdf
 router.post("/pdf", upload.single("pdf"), async (req, res) => {
   try {
     if (!req.file) {
@@ -43,16 +41,14 @@ router.post("/pdf", upload.single("pdf"), async (req, res) => {
       jobId: job.id,
       filename: req.file.filename
     });
-
   } catch (error) {
     console.error("Quiz upload error:", error);
     return res.status(500).json({ error: "Failed to process upload" });
   }
 });
 
-// POST /quiz/text - Generate quiz from text
+// POST /quiz/text
 router.post("/text", async (req, res) => {
-    console.log("Body received for /quiz/text:", req.body);
   try {
     const { text } = req.body;
 
@@ -74,14 +70,48 @@ router.post("/text", async (req, res) => {
       jobId: job.id,
       filename: "study-notes"
     });
-
   } catch (error) {
     console.error("Text quiz error:", error);
     return res.status(500).json({ error: "Failed to process text" });
   }
 });
 
-// GET /quiz/status/:jobId - Check job status and get quiz result
+// POST /quiz/youtube - NEW
+router.post("/youtube", async (req, res) => {
+  try {
+    const { url } = req.body;
+
+    if (!url || typeof url !== 'string') {
+      return res.status(400).json({ error: "No YouTube URL provided" });
+    }
+
+    console.log("YouTube quiz request for:", url);
+
+    const transcript = await getYouTubeTranscript(url);
+
+    const job = await queue.add(
+      "file-ready",
+      JSON.stringify({
+        text: transcript.text,
+        filename: `youtube-${transcript.videoId}`,
+        jobType: "quiz"
+      })
+    );
+
+    return res.json({
+      message: "YouTube transcript fetched. Quiz is being generated.",
+      jobId: job.id,
+      filename: "YouTube Video"
+    });
+  } catch (error) {
+    console.error("YouTube quiz error:", error);
+    return res.status(500).json({ 
+      error: error.message || "Failed to fetch YouTube transcript. Make sure the video has captions enabled." 
+    });
+  }
+});
+
+// GET /quiz/status/:jobId
 router.get("/status/:jobId", async (req, res) => {
   try {
     const job = await queue.getJob(req.params.jobId);
@@ -109,9 +139,7 @@ router.get("/status/:jobId", async (req, res) => {
       });
     }
 
-    return res.json({
-      status: state
-    });
+    return res.json({ status: state });
 
   } catch (error) {
     console.error("Status check error:", error);

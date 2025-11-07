@@ -22,13 +22,33 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({ onUploaded }) => {
         setUploading(true);
 
         try {
-          // Call parent callback if provided
-          if (onUploaded) {
-            await onUploaded({ file, response: {} });
+          // Create FormData
+          const formData = new FormData();
+          formData.append('pdf', file);
+
+          // Send to backend
+          console.log("Uploading file:", file.name);
+          const response = await fetch('http://localhost:8000/upload/pdf', {
+            method: 'POST',
+            body: formData,
+          });
+
+          if (!response.ok) {
+            throw new Error(`Upload failed: ${response.statusText}`);
           }
+
+          const data = await response.json();
+          console.log("Upload response:", data);
+
+          // Call parent callback with response
+          if (onUploaded) {
+            await onUploaded({ file, response: data });
+          }
+
+          alert('File uploaded successfully!');
         } catch (error) {
           console.error('Upload error:', error);
-          alert('Failed to upload file');
+          alert('Failed to upload file: ' + (error as Error).message);
         } finally {
           setUploading(false);
         }
@@ -57,3 +77,4 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({ onUploaded }) => {
 };
 
 export default FileUploadComponent;
+

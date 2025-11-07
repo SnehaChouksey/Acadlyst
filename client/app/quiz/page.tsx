@@ -5,11 +5,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileText, Type, Youtube } from 'lucide-react';
 import TextQuizTab from '@/components/quiz/text-quiz-tab';
 import PdfQuizTab from '@/components/quiz/pdf-quiz-tab';
-import YoutubeQuizTab from '@/components/quiz/youtube-quiz-tab';
+import YoutubeQuizTab from '@/components/quiz/youtube-quiz-tab'; // NEW
 
 export default function QuizGeneratorPage() {
   return (
-    <div className="flex flex-col items-center min-h-screen px-4 py-8 bg-linear-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="flex flex-col items-center min-h-screen px-4 py-8 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="w-full max-w-5xl mb-8">
         <h1 className="text-4xl font-bold mb-2">AI Quiz Generator</h1>
         <p className="text-slate-400 text-base">
@@ -26,8 +26,8 @@ export default function QuizGeneratorPage() {
             <TabsTrigger value="pdf" className="data-[state=active]:bg-purple-600 flex items-center gap-2">
               <FileText className="h-4 w-4" /> PDF/Doc
             </TabsTrigger>
-            <TabsTrigger value="youtube" disabled className="opacity-50 flex items-center gap-2">
-              <Youtube className="h-4 w-4" /> YouTube (Soon)
+            <TabsTrigger value="youtube" className="data-[state=active]:bg-red-600 flex items-center gap-2">
+              <Youtube className="h-4 w-4" /> YouTube
             </TabsTrigger>
           </TabsList>
 
