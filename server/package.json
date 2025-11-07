@@ -12,6 +12,7 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@clerk/backend": "^2.20.0",
     "@google/generative-ai": "^0.24.1",
     "@langchain/community": "^1.0.0",
     "@langchain/core": "^1.0.2",
@@ -19,12 +20,19 @@
     "@langchain/openai": "^1.0.0",
     "@langchain/qdrant": "^1.0.0",
     "@langchain/textsplitters": "^1.0.0",
+    "@prisma/client": "^6.19.0",
+    "axios": "^1.13.2",
     "bullmq": "^5.63.0",
+    "cloudinary": "^2.8.0",
     "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "langchain": "^1.0.2",
     "multer": "^2.0.2",
+    "multer-storage-cloudinary": "^4.0.0",
     "pdf-parse": "^1.1.1",
+    "prisma": "^6.19.0",
+    "stripe": "^19.3.0",
     "youtubei.js": "^16.0.1"
   },
   "devDependencies": {

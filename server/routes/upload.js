@@ -1,35 +1,27 @@
 import express from "express";
 import multer from "multer";
 import { Queue } from "bullmq";
-import fs from "fs";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import cloudinary from "../config/cloudinary.js";
 
 const router = express.Router();
 
 const queue = new Queue("file-upload-queue", {
-  connection: {
-    host: "localhost",
-    port: 6379,
+  connection: { host: "localhost", port: 6379 },
+});
+
+// Cloudinary storage configuration
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'pdf-uploads-rag',
+    resource_type: 'raw',
+    allowed_formats: ['pdf'],
+    public_id: (req, file) => `${Date.now()}-${file.originalname.replace('.pdf', '')}`,
   },
 });
 
-// Ensure uploads directory exists
-if (!fs.existsSync("uploads")) {
-  fs.mkdirSync("uploads");
-  console.log("Created uploads directory");
-}
-
-// Configure storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/");
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, `${uniqueSuffix}-${file.originalname}`);
-  },
-});
-
-const upload = multer({ 
+const upload = multer({
   storage,
   fileFilter: (req, file, cb) => {
     if (file.mimetype !== 'application/pdf') {
@@ -39,25 +31,22 @@ const upload = multer({
   }
 });
 
-// POST /upload/pdf (FIXED: removed "/uploads" from path)
 router.post("/pdf", upload.single("pdf"), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
     }
 
-    console.log("File received:", req.file.filename);
-    console.log("File path:", req.file.path);
+    console.log("File uploaded to Cloudinary:", req.file.path);
     console.log("File size:", req.file.size);
 
-    // Add RAG job to queue
+    // Add RAG job with Cloudinary URL
     const job = await queue.add(
       "file-ready",
       JSON.stringify({
-        filename: req.file.filename,
-        destination: req.file.destination,
-        path: req.file.path,
-        jobType: "rag", // IMPORTANT: specify job type
+        filename: req.file.originalname,
+        url: req.file.path, // Cloudinary URL
+        jobType: "rag",
       })
     );
 
@@ -66,12 +55,12 @@ router.post("/pdf", upload.single("pdf"), async (req, res) => {
     return res.json({
       message: "PDF uploaded successfully! Processing started.",
       jobId: job.id,
-      filename: req.file.filename,
+      filename: req.file.originalname,
       fileSize: req.file.size,
     });
   } catch (error) {
     console.error("Upload error:", error);
-    return res.status(500).json({ 
+    return res.status(500).json({
       error: "Upload failed",
       details: error instanceof Error ? error.message : String(error)
     });

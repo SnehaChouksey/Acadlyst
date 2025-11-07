@@ -2,6 +2,7 @@ import "dotenv/config";
 import pdf from "pdf-parse";
 import fs from "fs";
 import { Worker } from "bullmq";
+import axios from "axios"; 
 import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { TaskType } from "@google/generative-ai";
@@ -9,6 +10,19 @@ import { QdrantVectorStore } from "@langchain/qdrant";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 
 console.log("GOOGLE KEY:", process.env.GOOGLE_API_KEY ? "FOUND" : "NOT FOUND");
+
+async function downloadPDFFromURL(url) {
+  try {
+    console.log("Downloading PDF from:", url);
+    const response = await axios.get(url, { responseType: 'arraybuffer' });
+    const buffer = Buffer.from(response.data, 'binary');
+    console.log("PDF downloaded. Size:", buffer.length, "bytes");
+    return buffer;
+  } catch (error) {
+    console.error("Error downloading PDF:", error.message);
+    throw new Error(`Failed to download PDF: ${error.message}`);
+  }
+}
 
 // HELPER: Sleep function for rate limiting
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -61,8 +75,8 @@ const worker = new Worker(
         if (data.text) {
           sourceText = data.text;
           console.log("Summarise: Using text input. Length:", sourceText.length);
-        } else if (data.path) {
-          const buffer = fs.readFileSync(data.path);
+        } else if (data.url) {
+          const buffer = await downloadPDFFromURL(data.url);
           const parsed = await pdf(buffer);
           sourceText = parsed.text;
           console.log("Summarise: Using PDF input. Length:", sourceText.length);
@@ -202,8 +216,8 @@ Respond in this exact JSON format ONLY:
           if (data.text) {
             sourceText = data.text;
             console.log("Quiz: Using text input. Length:", sourceText.length);
-          } else if (data.path) {
-            const buffer = fs.readFileSync(data.path);
+          } else if (data.url) {
+            const buffer = await downloadPDFFromURL(data.url);
             const parsed = await pdf(buffer);
             sourceText = parsed.text;
             console.log("Quiz: Using PDF input. Length:", sourceText.length);
@@ -370,17 +384,16 @@ Respond in this EXACT JSON format ONLY:
       }
 
       // ===== RAG/Q&A JOB =====
-      if (data.jobType === "rag" || (!data.jobType && data.path)) {
+      if (data.jobType === "rag" || (!data.jobType && data.url)) {
         console.log("Processing RAG/EMBEDDING job...");
 
-        console.log("RAG Job Started. data.path =", data.path);
-if (!fs.existsSync(data.path)) {
-  console.error("File does NOT exist:", data.path);
-  return { error: "File not found", filePath: data.path };
-}
+        console.log("RAG Job Started. data.path =", data.url);
+        if (!data.url) {
+          throw new Error("No PDF provided for chat");
+        }
 
 
-        const buffer = fs.readFileSync(data.path);
+        const buffer = await downloadPDFFromURL(data.url);
         const parsed = await pdf(buffer);
         const pdfText = parsed.text;
         const rawDocs = [{ pageContent: pdfText, metadata: {} }];

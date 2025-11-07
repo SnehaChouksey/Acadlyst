@@ -99,9 +99,8 @@ router.post("/", async (req, res) => {
 });
 
 // Also support GET for testing
-router.get("/", async (req, res) => {
-  req.body = { query: req.query.message };
-  return router._router.stack.find(r => r.route?.methods?.post)?._callbacks?.[0](req, res);
+router.get("/", (req, res) => {
+  res.status(405).json({ error: "Use POST /chat with JSON body: { query: '...' }" });
 });
 
 export default router;

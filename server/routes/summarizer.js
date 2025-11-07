@@ -1,7 +1,9 @@
 import express from "express";
 import multer from "multer";
 import { Queue } from "bullmq";
-import { getYouTubeTranscript } from "../services/youtubeService.js"; // NEW
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import cloudinary from "../config/cloudinary.js";
+import { getYouTubeTranscript } from "../services/youtubeService.js";
 
 const router = express.Router();
 
@@ -9,11 +11,13 @@ const queue = new Queue("file-upload-queue", {
   connection: { host: "localhost", port: 6379 },
 });
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "uploads/"),
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, `${uniqueSuffix}-${file.originalname}`);
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'pdf-uploads-summarizer',
+    resource_type: 'raw',
+    allowed_formats: ['pdf'],
+    public_id: (req, file) => `${Date.now()}-${file.originalname.replace('.pdf', '')}`,
   },
 });
 
@@ -29,9 +33,8 @@ router.post("/pdf", upload.single("pdf"), async (req, res) => {
     const job = await queue.add(
       "file-ready",
       JSON.stringify({
-        filename: req.file.filename,
-        destination: req.file.destination,
-        path: req.file.path,
+        filename: req.file.originalname,
+        url: req.file.path, // Cloudinary URL
         jobType: "summarize"
       })
     );
@@ -39,7 +42,7 @@ router.post("/pdf", upload.single("pdf"), async (req, res) => {
     return res.json({
       message: "PDF uploaded successfully. Summary is being generated.",
       jobId: job.id,
-      filename: req.file.filename
+      filename: req.file.originalname
     });
   } catch (error) {
     console.error("Summarizer upload error:", error);
@@ -47,7 +50,7 @@ router.post("/pdf", upload.single("pdf"), async (req, res) => {
   }
 });
 
-// POST /summarizer/youtube - NEW
+// POST /summarizer/youtube
 router.post("/youtube", async (req, res) => {
   try {
     const { url } = req.body;
@@ -76,8 +79,8 @@ router.post("/youtube", async (req, res) => {
     });
   } catch (error) {
     console.error("YouTube summarizer error:", error);
-    return res.status(500).json({ 
-      error: error.message || "Failed to fetch YouTube transcript. Make sure the video has captions enabled." 
+    return res.status(500).json({
+      error: error.message || "Failed to fetch YouTube transcript."
     });
   }
 });
@@ -86,7 +89,7 @@ router.post("/youtube", async (req, res) => {
 router.get("/status/:jobId", async (req, res) => {
   try {
     const job = await queue.getJob(req.params.jobId);
-    
+
     if (!job) {
       return res.status(404).json({ error: "Job not found" });
     }
