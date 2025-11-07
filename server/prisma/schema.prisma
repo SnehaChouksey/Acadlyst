@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String         @id @default(cuid())
+  clerkId            String         @unique
+  email              String         @unique
+  name               String?
+  profileImage       String?
+  isOwner            Boolean        @default(false)
+  plan               String         @default("FREE") // e.g.: FREE, PRO, ENTERPRISE
+  subscriptionStatus String         @default("inactive")
+  stripeCustomerId   String?        @unique
+  // Credits (reset monthly for FREE plans, unlimited for paid)
+  summarizerCredits  Int            @default(2)
+  quizCredits        Int            @default(2)
+  chatCredits        Int            @default(1)
+  // Usage (incremented for history/logging)
+  totalSummarizes    Int            @default(0)
+  totalQuizzes       Int            @default(0)
+  totalChats         Int            @default(0)
+  lastCreditResetAt  DateTime       @default(now())
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  // Relations
+  uploads            Upload[]
+  usageLogs          UsageLog[]
+  subscriptions      Subscription[]
+}
+
+model Upload {
+  id         String   @id @default(cuid())
+  userId     String
+  fileName   String
+  fileUrl    String // Cloudinary/S3 URL
+  fileSize   Int
+  uploadedAt DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model UsageLog {
+  id          String   @id @default(cuid())
+  userId      String
+  featureUsed String // "summarizer", "quiz", "chat"
+  tokensUsed  Int
+  costInCents Int
+  timestamp   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([timestamp])
+}
+
+// Optional: For subscriptions/payments (extend as needed)
+model Subscription {
+  id                   String    @id @default(cuid())
+  userId               String
+  stripeSubscriptionId String?   @unique
+  status               String // "active", "cancelled", "past_due"
+  plan                 String
+  currentPeriodEnd     DateTime?
+  cancelledAt          DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
