@@ -4,12 +4,20 @@ import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { QdrantVectorStore } from "@langchain/qdrant";
 import { TaskType } from "@google/generative-ai";
+import { checkCredits, deductCredits } from "../services/userService.js";
 
 const router = express.Router();
 
 // POST /chat (accept both POST and GET for flexibility)
 router.post("/", async (req, res) => {
+     const clerkId = req.headers["x-clerk-id"]; // Pass this from frontend requests!
+     if (!clerkId) return res.status(401).json({ error: "Unauthorized" });
+
   try {
+    const { hasCredits, remaining, isOwner } = await checkCredits(clerkId, "chat");
+    if (!hasCredits) return res.status(402).json({ error: "Out of chat credits", remaining });
+
+
     const userQuery = req.body.query || req.body.message;
 
     if (!userQuery || userQuery.trim().length === 0) {
@@ -17,6 +25,8 @@ router.post("/", async (req, res) => {
     }
 
     console.log("Chat request received. Query:", userQuery);
+
+   
 
     // STEP 1: Create embeddings for query
     console.log("STEP 1: Creating embeddings...");
@@ -51,6 +61,9 @@ router.post("/", async (req, res) => {
       });
     }
 
+    await deductCredits(clerkId, "chat");
+
+
     docs.forEach((d, i) => {
       console.log(`Doc ${i + 1}: ${d.pageContent.substring(0, 80)}...`);
     });
@@ -80,6 +93,7 @@ router.post("/", async (req, res) => {
       ? response 
       : (response.content || JSON.stringify(response));
 
+
     console.log("Chat completed successfully");
     return res.json({
       answer: answer,
@@ -88,6 +102,7 @@ router.post("/", async (req, res) => {
         metadata: d.metadata
       }))
     });
+
 
   } catch (err) {
     console.error("Chat error:", err);

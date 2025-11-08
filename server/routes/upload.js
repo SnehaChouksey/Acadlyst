@@ -3,6 +3,7 @@ import multer from "multer";
 import { Queue } from "bullmq";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import cloudinary from "../config/cloudinary.js";
+import { checkCredits, deductCredits } from "../services/userService.js";
 
 const router = express.Router();
 
@@ -10,7 +11,6 @@ const queue = new Queue("file-upload-queue", {
   connection: { host: "localhost", port: 6379 },
 });
 
-// Cloudinary storage configuration
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
@@ -37,16 +37,33 @@ router.post("/pdf", upload.single("pdf"), async (req, res) => {
       return res.status(400).json({ error: "No file uploaded" });
     }
 
-    console.log("File uploaded to Cloudinary:", req.file.path);
-    console.log("File size:", req.file.size);
+    const clerkId = req.headers["x-clerk-id"];
+    if (!clerkId) {
+      return res.status(401).json({ error: "Unauthorized - Please sign in" });
+    }
 
-    // Add RAG job with Cloudinary URL
+    // Check credits
+    const creditCheck = await checkCredits(clerkId, "chat");
+    if (!creditCheck.hasCredits && !creditCheck.isOwner) {
+      return res.status(402).json({
+        error: "Insufficient credits",
+        remaining: creditCheck.remaining,
+        message: "You've run out of RAG chat credits. Upgrade your plan to continue.",
+      });
+    }
+
+    // Deduct credit
+    await deductCredits(clerkId, "chat");
+
+    console.log("File uploaded to Cloudinary:", req.file.path);
+
     const job = await queue.add(
       "file-ready",
       JSON.stringify({
         filename: req.file.originalname,
-        url: req.file.path, // Cloudinary URL
+        url: req.file.path,
         jobType: "rag",
+        clerkId,
       })
     );
 

@@ -4,6 +4,9 @@ import { Queue } from "bullmq";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import cloudinary from "../config/cloudinary.js";
 import { getYouTubeTranscript } from "../services/youtubeService.js";
+import { checkCredits, deductCredits } from "../services/userService.js";
+
+
 
 const router = express.Router();
 
@@ -30,12 +33,33 @@ router.post("/pdf", upload.single("pdf"), async (req, res) => {
       return res.status(400).json({ error: "No PDF file uploaded" });
     }
 
+    const clerkId = req.headers["x-clerk-id"];
+    if (!clerkId) {
+      return res.status(401).json({ error: "Unauthorized - Please sign in" });
+    }
+
+    // Check credits
+    const creditCheck = await checkCredits(clerkId, "summarizer");
+    if (!creditCheck.hasCredits && !creditCheck.isOwner) {
+      return res.status(402).json({
+        error: "Insufficient credits",
+        remaining: creditCheck.remaining,
+        message: "You've run out of summarizer credits.",
+      });
+    }
+
+    // Deduct credit
+    await deductCredits(clerkId, "summarizer");
+
+
     const job = await queue.add(
       "file-ready",
       JSON.stringify({
         filename: req.file.originalname,
         url: req.file.path, // Cloudinary URL
-        jobType: "summarize"
+        jobType: "summarize",
+        clerkId
+    
       })
     );
 
@@ -59,7 +83,26 @@ router.post("/youtube", async (req, res) => {
       return res.status(400).json({ error: "No YouTube URL provided" });
     }
 
+    const clerkId = req.headers["x-clerk-id"];
+    if (!clerkId) {
+      return res.status(401).json({ error: "Unauthorized - Please sign in" });
+    }
+
+    // Check credits
+    const creditCheck = await checkCredits(clerkId, "summarizer");
+    if (!creditCheck.hasCredits && !creditCheck.isOwner) {
+      return res.status(402).json({
+        error: "Insufficient credits",
+        remaining: creditCheck.remaining,
+        message: "You've run out of summarizer credits.",
+      });
+    }
+
     console.log("YouTube summarizer request for:", url);
+
+    // Deduct credit
+    await deductCredits(clerkId, "summarizer");
+
 
     const transcript = await getYouTubeTranscript(url);
 
@@ -68,7 +111,8 @@ router.post("/youtube", async (req, res) => {
       JSON.stringify({
         text: transcript.text,
         filename: `youtube-${transcript.videoId}`,
-        jobType: "summarize"
+        jobType: "summarize",
+        clerkId
       })
     );
 

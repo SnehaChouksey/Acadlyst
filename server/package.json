@@ -33,6 +33,7 @@
     "pdf-parse": "^1.1.1",
     "prisma": "^6.19.0",
     "stripe": "^19.3.0",
+    "svix": "^1.81.0",
     "youtubei.js": "^16.0.1"
   },
   "devDependencies": {
