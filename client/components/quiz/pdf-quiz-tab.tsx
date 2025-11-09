@@ -5,6 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import FileUploadComponent from '@/components/file-upload';
 import QuizDisplay from '@/components/quiz/quiz-display';
+import { useAuth } from "@clerk/nextjs";
+import UpgradeModal from "@/components/upgrade-modal";
+
+
 
 interface Question {
   id: number;
@@ -26,6 +30,8 @@ interface QuizResponse {
 }
 
 export default function PdfQuizTab() {
+  const { userId } = useAuth();
+  const [showUpgrade, setShowUpgrade] = useState(false);
   const [quiz, setQuiz] = useState<QuizResponse | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -39,8 +45,17 @@ export default function PdfQuizTab() {
 
       const res = await fetch('http://localhost:8000/quiz/pdf', {
         method: 'POST',
+        headers: {
+        'x-clerk-id': userId || '',
+        },
         body: formData,
       });
+
+      if (res.status === 403) {
+        // Out of credits
+        setShowUpgrade(true);
+        return;
+      }
 
       const uploadResponse = await res.json();
       
@@ -96,6 +111,7 @@ export default function PdfQuizTab() {
   }
 
   return (
+    <>
     <Card className="border border-slate-700 bg-slate-800 shadow-2xl">
       <CardContent className="p-8">
         {!loading && (
@@ -115,5 +131,11 @@ export default function PdfQuizTab() {
         )}
       </CardContent>
     </Card>
+    <UpgradeModal 
+        open={showUpgrade} 
+        onClose={() => setShowUpgrade(false)}
+        feature="summarizer"
+      />
+    </>
   );
 }

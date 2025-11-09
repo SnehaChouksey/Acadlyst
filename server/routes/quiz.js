@@ -1,4 +1,3 @@
-
 import express from "express";
 import multer from "multer";
 import { Queue } from "bullmq";
@@ -6,8 +5,6 @@ import { CloudinaryStorage } from "multer-storage-cloudinary";
 import cloudinary from "../config/cloudinary.js";
 import { getYouTubeTranscript } from "../services/youtubeService.js";
 import { checkCredits, deductCredits } from "../services/userService.js";
-
-import { configDotenv } from "dotenv";
 
 const router = express.Router();
 
@@ -32,32 +29,31 @@ router.post("/pdf", upload.single("pdf"), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No PDF file uploaded" });
-    
     }
+
     const clerkId = req.headers["x-clerk-id"];
     if (!clerkId) {
       return res.status(401).json({ error: "Unauthorized - Please sign in" });
     }
 
-    // Check credits
-    const creditCheck = await checkCredits(clerkId, "summarizer");
+    // Check credits - FIXED: Use "quiz" instead of "summarizer"
+    const creditCheck = await checkCredits(clerkId, "quiz");
     if (!creditCheck.hasCredits && !creditCheck.isOwner) {
-      return res.status(402).json({
+      return res.status(403).json({
         error: "Insufficient credits",
         remaining: creditCheck.remaining,
-        message: "You've run out of summarizer credits.",
+        message: "You've run out of quiz credits.",
       });
     }
 
-    // Deduct credit
-    await deductCredits(clerkId, "summarizer");
-
+    // Deduct credit - FIXED: Use "quiz" instead of "summarizer"
+    await deductCredits(clerkId, "quiz");
 
     const job = await queue.add(
       "file-ready",
       JSON.stringify({
         filename: req.file.originalname,
-        url: req.file.path, // Cloudinary URL
+        url: req.file.path,
         jobType: "quiz",
         clerkId
       })
@@ -88,19 +84,18 @@ router.post("/text", async (req, res) => {
       return res.status(401).json({ error: "Unauthorized - Please sign in" });
     }
 
-    // Check credits
-    const creditCheck = await checkCredits(clerkId, "summarizer");
+    // Check credits - FIXED: Use "quiz" instead of "summarizer"
+    const creditCheck = await checkCredits(clerkId, "quiz");
     if (!creditCheck.hasCredits && !creditCheck.isOwner) {
-      return res.status(402).json({
+      return res.status(403).json({
         error: "Insufficient credits",
         remaining: creditCheck.remaining,
-        message: "You've run out of summarizer credits.",
+        message: "You've run out of quiz credits.",
       });
     }
 
-    // Deduct credit
-    await deductCredits(clerkId, "summarizer");
-
+    // Deduct credit - FIXED: Use "quiz" instead of "summarizer"
+    await deductCredits(clerkId, "quiz");
 
     const job = await queue.add(
       "file-ready",
@@ -131,24 +126,26 @@ router.post("/youtube", async (req, res) => {
     if (!url || typeof url !== 'string') {
       return res.status(400).json({ error: "No YouTube URL provided" });
     }
+
     const clerkId = req.headers["x-clerk-id"];
     if (!clerkId) {
       return res.status(401).json({ error: "Unauthorized - Please sign in" });
     }
 
-    // Check credits
-    const creditCheck = await checkCredits(clerkId, "summarizer");
+    // Check credits - FIXED: Use "quiz" instead of "summarizer"
+    const creditCheck = await checkCredits(clerkId, "quiz");
     if (!creditCheck.hasCredits && !creditCheck.isOwner) {
-      return res.status(402).json({
+      return res.status(403).json({
         error: "Insufficient credits",
         remaining: creditCheck.remaining,
-        message: "You've run out of summarizer credits.",
+        message: "You've run out of quiz credits.",
       });
     }
     
     console.log("YouTube quiz request for:", url);
-    // Deduct credit
-    await deductCredits(clerkId, "summarizer");
+
+    // Deduct credit - FIXED: Use "quiz" instead of "summarizer"
+    await deductCredits(clerkId, "quiz");
 
     const transcript = await getYouTubeTranscript(url);
 

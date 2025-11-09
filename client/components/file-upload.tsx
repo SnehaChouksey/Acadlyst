@@ -1,13 +1,17 @@
 'use client';
 import * as React from 'react';
 import { Upload } from 'lucide-react';
+import { useAuth } from "@clerk/nextjs";
+import UpgradeModal from "./upgrade-modal";
 
 interface FileUploadProps {
-  onUploaded?: (data: { file: File; response: any }) => void | Promise<void>;
+   onUploaded?: (data: { file: File; response: any }) => void | Promise<void>;
 }
 
 const FileUploadComponent: React.FC<FileUploadProps> = ({ onUploaded }) => {
+  const { userId } = useAuth();
   const [uploading, setUploading] = React.useState(false);
+  const [showUpgrade, setShowUpgrade] = React.useState(false);
 
   const handleFileUploadButtonClick = () => {
     const el = document.createElement('input');
@@ -30,8 +34,18 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({ onUploaded }) => {
           console.log("Uploading file:", file.name);
           const response = await fetch('http://localhost:8000/upload/pdf', {
             method: 'POST',
+            headers: {
+            'x-clerk-id': userId || '',
+            },
             body: formData,
           });
+
+          if (response.status === 403) {
+          // Out of credits
+          setShowUpgrade(true);
+          return;
+          }
+
 
           if (!response.ok) {
             throw new Error(`Upload failed: ${response.statusText}`);
@@ -72,9 +86,18 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({ onUploaded }) => {
         </h3>
         <p className="text-sm text-muted-foreground">Click to select a PDF document</p>
       </div>
+      <UpgradeModal 
+        open={showUpgrade} 
+        onClose={() => setShowUpgrade(false)}
+        feature="summarizer"
+      />
     </div>
   );
 };
 
 export default FileUploadComponent;
+
+function useState(arg0: boolean): [any, any] {
+  throw new Error('Function not implemented.');
+}
 

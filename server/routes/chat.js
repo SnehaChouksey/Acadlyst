@@ -4,19 +4,24 @@ import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { QdrantVectorStore } from "@langchain/qdrant";
 import { TaskType } from "@google/generative-ai";
-import { checkCredits, deductCredits } from "../services/userService.js";
+import { checkChatMessageCredits, deductChatMessageCredits } from "../services/userService.js";  // CHANGED
 
 const router = express.Router();
 
-// POST /chat (accept both POST and GET for flexibility)
 router.post("/", async (req, res) => {
-     const clerkId = req.headers["x-clerk-id"]; // Pass this from frontend requests!
-     if (!clerkId) return res.status(401).json({ error: "Unauthorized" });
+  const clerkId = req.headers["x-clerk-id"];
+  if (!clerkId) return res.status(401).json({ error: "Unauthorized" });
 
   try {
-    const { hasCredits, remaining, isOwner } = await checkCredits(clerkId, "chat");
-    if (!hasCredits) return res.status(402).json({ error: "Out of chat credits", remaining });
-
+    // CHANGED: Check chat message credits
+    const { hasCredits, remaining } = await checkChatMessageCredits(clerkId);
+    if (!hasCredits) {
+      return res.status(403).json({ 
+        error: "Out of chat message credits", 
+        remaining: 0,
+        message: "You've used all your free chat messages. Upgrade to continue."
+      });
+    }
 
     const userQuery = req.body.query || req.body.message;
 
@@ -25,8 +30,6 @@ router.post("/", async (req, res) => {
     }
 
     console.log("Chat request received. Query:", userQuery);
-
-   
 
     // STEP 1: Create embeddings for query
     console.log("STEP 1: Creating embeddings...");
@@ -61,8 +64,8 @@ router.post("/", async (req, res) => {
       });
     }
 
-    await deductCredits(clerkId, "chat");
-
+    // CHANGED: Deduct chat message credit
+    await deductChatMessageCredits(clerkId);
 
     docs.forEach((d, i) => {
       console.log(`Doc ${i + 1}: ${d.pageContent.substring(0, 80)}...`);
@@ -93,7 +96,6 @@ router.post("/", async (req, res) => {
       ? response 
       : (response.content || JSON.stringify(response));
 
-
     console.log("Chat completed successfully");
     return res.json({
       answer: answer,
@@ -102,7 +104,6 @@ router.post("/", async (req, res) => {
         metadata: d.metadata
       }))
     });
-
 
   } catch (err) {
     console.error("Chat error:", err);
@@ -113,7 +114,6 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Also support GET for testing
 router.get("/", (req, res) => {
   res.status(405).json({ error: "Use POST /chat with JSON body: { query: '...' }" });
 });

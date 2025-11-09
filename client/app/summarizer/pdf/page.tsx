@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import FileUploadComponent from '@/components/file-upload';
 import { Download, RefreshCcw, FileText, Copy, Check, Youtube } from 'lucide-react';
+import { useAuth } from "@clerk/nextjs";
+import UpgradeModal from "@/components/upgrade-modal";
 
 interface SummaryResponse {
   key_points: string[];
@@ -16,12 +18,16 @@ interface SummaryResponse {
 }
 
 export default function SummarizerPage() {
+  const { userId } = useAuth(); 
+  console.log("My Clerk ID:", userId);
   const [tab, setTab] = React.useState('pdf');
   const [summary, setSummary] = React.useState<SummaryResponse | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [copied, setCopied] = React.useState(false);
   const [youtubeUrl, setYoutubeUrl] = React.useState('');
   const [error, setError] = React.useState('');
+  const [showUpgrade, setShowUpgrade] = React.useState(false);
+  
 
   const handleFileUpload = async (data: { file: File; response: any }) => {
     try {
@@ -34,8 +40,17 @@ export default function SummarizerPage() {
 
       const res = await fetch('http://localhost:8000/summarizer/pdf', {
         method: 'POST',
+        headers: {
+         'x-clerk-id': userId || '',
+        },
         body: formData,
       });
+
+      if (res.status === 403) {
+        // Out of credits
+        setShowUpgrade(true);
+        return;
+      }
 
       const uploadResponse = await res.json();
       console.log("Upload response:", uploadResponse);
@@ -69,7 +84,9 @@ export default function SummarizerPage() {
 
       const res = await fetch('http://localhost:8000/summarizer/youtube', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json',
+                     'x-clerk-id': userId || '',
+         },
         body: JSON.stringify({ url: youtubeUrl })
       });
 
@@ -354,6 +371,11 @@ export default function SummarizerPage() {
           </TabsContent>
         </Tabs>
       </Card>
+        <UpgradeModal 
+        open={showUpgrade} 
+        onClose={() => setShowUpgrade(false)}
+        feature="summarizer"
+      />
     </div>
   );
 }

@@ -45,7 +45,7 @@ router.post("/pdf", upload.single("pdf"), async (req, res) => {
     // Check credits
     const creditCheck = await checkCredits(clerkId, "chat");
     if (!creditCheck.hasCredits && !creditCheck.isOwner) {
-      return res.status(402).json({
+      return res.status(403).json({
         error: "Insufficient credits",
         remaining: creditCheck.remaining,
         message: "You've run out of RAG chat credits. Upgrade your plan to continue.",

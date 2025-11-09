@@ -5,6 +5,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import QuizDisplay from '@/components/quiz/quiz-display';
+import { useAuth } from "@clerk/nextjs";
+import UpgradeModal from "@/components/upgrade-modal";
+
+
 
 interface Question {
   id: number;
@@ -26,9 +30,11 @@ interface QuizResponse {
 }
 
 export default function TextQuizTab() {
+  const { userId } = useAuth();
   const [textInput, setTextInput] = useState('');
   const [quiz, setQuiz] = useState<QuizResponse | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   const handleGenerateQuiz = async () => {
     if (!textInput.trim()) {
@@ -42,11 +48,19 @@ export default function TextQuizTab() {
 
       const res = await fetch('http://localhost:8000/quiz/text', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json',
+                   'x-clerk-id': userId || '',
+                 },
         body: JSON.stringify({ text: textInput })
       });
 
       const data = await res.json();
+
+      if (res.status === 403) {
+        // Out of credits
+        setShowUpgrade(true);
+        return;
+      }
 
       if (data.jobId) {
         pollJobStatus(data.jobId);
@@ -103,6 +117,7 @@ export default function TextQuizTab() {
   }
 
   return (
+    <>
     <Card className="border border-slate-700 bg-slate-800 shadow-2xl">
       <CardContent className="p-8 space-y-4">
         <textarea
@@ -130,5 +145,11 @@ export default function TextQuizTab() {
         )}
       </CardContent>
     </Card>
+    <UpgradeModal 
+        open={showUpgrade} 
+        onClose={() => setShowUpgrade(false)}
+        feature="summarizer"
+      />
+    </>
   );
 }

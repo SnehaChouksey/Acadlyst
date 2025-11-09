@@ -7,9 +7,10 @@ import TextQuizTab from '@/components/quiz/text-quiz-tab';
 import PdfQuizTab from '@/components/quiz/pdf-quiz-tab';
 import YoutubeQuizTab from '@/components/quiz/youtube-quiz-tab'; // NEW
 
+
 export default function QuizGeneratorPage() {
   return (
-    <div className="flex flex-col items-center min-h-screen px-4 py-8 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="flex flex-col items-center min-h-screen px-4 py-8 bg-linear-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="w-full max-w-5xl mb-8">
         <h1 className="text-4xl font-bold mb-2">AI Quiz Generator</h1>
         <p className="text-slate-400 text-base">

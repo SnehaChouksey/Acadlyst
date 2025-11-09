@@ -21,6 +21,7 @@ model User {
   summarizerCredits  Int            @default(2)
   quizCredits        Int            @default(2)
   chatCredits        Int            @default(1)
+  chatMessageCredits Int            @default(2)  
   // Usage (incremented for history/logging)
   totalSummarizes    Int            @default(0)
   totalQuizzes       Int            @default(0)

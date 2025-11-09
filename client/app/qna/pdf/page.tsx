@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Send, AlertCircle, CheckCircle } from "lucide-react";
+import { useAuth } from "@clerk/nextjs";
 
 interface Doc {
   pageContent?: string;
@@ -22,6 +23,7 @@ interface IMessage {
 }
 
 export default function QA() {
+  const { userId } = useAuth(); 
   const [input, setInput] = React.useState<string>('');
   const [messages, setMessages] = React.useState<IMessage[]>([
     {
@@ -76,7 +78,9 @@ export default function QA() {
     try {
       const res = await fetch(`http://localhost:8000/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json',
+                   'x-clerk-id': userId || '', 
+         },
         body: JSON.stringify({ query: userMessage })
       });
 

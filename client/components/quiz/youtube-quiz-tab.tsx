@@ -6,6 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Youtube } from 'lucide-react';
 import QuizDisplay from './quiz-display';
+import { useAuth } from "@clerk/nextjs";
+import UpgradeModal from "@/components/upgrade-modal";
+
 
 interface Question {
   id: number;
@@ -22,10 +25,12 @@ interface QuizResponse {
 }
 
 export default function YoutubeQuizTab() {
+  const { userId } = useAuth(); 
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [quiz, setQuiz] = useState<QuizResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   const handleGenerateQuiz = async () => {
     if (!youtubeUrl.trim()) {
@@ -40,12 +45,22 @@ export default function YoutubeQuizTab() {
 
       const res = await fetch('http://localhost:8000/quiz/youtube', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' ,
+                   'x-clerk-id': userId || '',
+                 },
         body: JSON.stringify({ url: youtubeUrl })
       });
 
+      if (res.status === 403) {
+        // Out of credits
+        setShowUpgrade(true);
+        return;
+        }
+
+
       const data = await res.json();
 
+        
       if (!res.ok) {
         setError(data.error || 'Error generating quiz');
         setLoading(false);
@@ -107,6 +122,7 @@ export default function YoutubeQuizTab() {
   }
 
   return (
+    <>
     <Card className="border border-slate-700 bg-slate-800 shadow-2xl">
       <CardContent className="p-8 space-y-4">
         <div className="flex items-center gap-2 mb-4">
@@ -149,5 +165,11 @@ export default function YoutubeQuizTab() {
         )}
       </CardContent>
     </Card>
+    <UpgradeModal 
+        open={showUpgrade} 
+        onClose={() => setShowUpgrade(false)}
+        feature="summarizer"
+      />
+    </>
   );
 }
