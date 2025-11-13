@@ -9,7 +9,11 @@ import { TaskType } from "@google/generative-ai";
 import { QdrantVectorStore } from "@langchain/qdrant";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 
+const redisUrl = process.env.REDIS_URL;
+
 console.log("GOOGLE KEY:", process.env.GOOGLE_API_KEY ? "FOUND" : "NOT FOUND");
+
+
 
 async function downloadPDFFromURL(url) {
   try {
@@ -444,10 +448,7 @@ Respond in this EXACT JSON format ONLY:
   },
   {
     concurrency: 10,
-    connection: {
-      host: "localhost",
-      port: "6379",
-    },
+    connection:redisUrl
   }
 );
 

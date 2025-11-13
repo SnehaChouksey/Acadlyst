@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import multer from "multer";
 import { Queue } from "bullmq";
@@ -9,7 +10,7 @@ import { checkCredits, deductCredits } from "../services/userService.js";
 const router = express.Router();
 
 const queue = new Queue("file-upload-queue", {
-  connection: { host: "localhost", port: 6379 },
+  connection: process.env.REDIS_URL
 });
 
 const storage = new CloudinaryStorage({
