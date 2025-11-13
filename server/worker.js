@@ -9,8 +9,6 @@ import { TaskType } from "@google/generative-ai";
 import { QdrantVectorStore } from "@langchain/qdrant";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 
-const redisUrl = process.env.REDIS_URL;
-
 console.log("GOOGLE KEY:", process.env.GOOGLE_API_KEY ? "FOUND" : "NOT FOUND");
 
 
@@ -429,7 +427,7 @@ Respond in this EXACT JSON format ONLY:
         const vectorStore = await QdrantVectorStore.fromExistingCollection(
           embeddings,
           {
-            url: "http://localhost:6333",
+            url: process.env.QDRANT_URL,
             collectionName: "langchainjs-testing",
           }
         );
@@ -448,7 +446,12 @@ Respond in this EXACT JSON format ONLY:
   },
   {
     concurrency: 10,
-    connection:redisUrl
+    connection: {
+      host: process.env.REDIS_HOST,
+      port: parseInt(process.env.REDIS_PORT),
+      password: process.env.REDIS_PASSWORD,
+      tls: {}
+    }
   }
 );
 

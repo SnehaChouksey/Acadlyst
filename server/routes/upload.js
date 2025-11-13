@@ -9,7 +9,12 @@ import { checkCredits, deductCredits } from "../services/userService.js";
 const router = express.Router();
 
 const queue = new Queue("file-upload-queue", {
-  connection: process.env.REDIS_URL
+ connection: {
+    host: process.env.REDIS_HOST,
+    port: parseInt(process.env.REDIS_PORT),
+    password: process.env.REDIS_PASSWORD,
+    tls: {}
+  }
 });
 
 const storage = new CloudinaryStorage({
