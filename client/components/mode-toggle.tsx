@@ -1,17 +1,23 @@
-"use client"
-
-import * as React from "react"
-import { Moon, Sun } from "lucide-react"
-import { useTheme } from "next-themes"
+"use client";
+import * as React from "react";
+import { Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
 
 export function ModeToggle() {
-  const { theme, setTheme } = useTheme()
+  const { theme, setTheme } = useTheme();
+  const [hydrated, setHydrated] = React.useState(false);
+
+  // Ensure correct theme only after hydration
+  React.useEffect(() => {
+    setHydrated(true);
+  }, []);
 
   // Toggle between 'light' and 'dark'
   const handleToggle = () => {
-    setTheme(theme === "dark" ? "light" : "dark")
-  }
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
 
+  // SSR: fallback, show static icons; CSR: show toggleable icons
   return (
     <span
       onClick={handleToggle}
@@ -22,14 +28,14 @@ export function ModeToggle() {
     >
       <Sun
         className={`h-[1.7rem] w-[1.7rem] transition-all ${
-          theme === "dark" ? "scale-0 -rotate-90 absolute" : "scale-100 rotate-0"
+          hydrated ? (theme === "dark" ? "scale-0 -rotate-90 absolute" : "scale-100 rotate-0") : "scale-100 rotate-0"
         }`}
       />
       <Moon
         className={`h-[1.7rem] w-[1.7rem] transition-all ${
-          theme === "dark" ? "scale-100 rotate-0" : "scale-0 rotate-90 absolute"
+          hydrated ? (theme === "dark" ? "scale-100 rotate-0" : "scale-0 rotate-90 absolute") : "scale-0 rotate-90 absolute"
         }`}
       />
     </span>
-  )
+  );
 }

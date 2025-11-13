@@ -14,21 +14,37 @@ const navItems = [
   { label: "Chat", href: "/qna/pdf", icon: MessageSquare },
   { label: "Summarizer", href: "/summarizer/pdf", icon: FileText },
   { label: "Quiz", href: "/quiz", icon:Brain },
-  
-
 ];
+
 export default function Sidebar() {
   const { userId } = useAuth();
   const [recentChats, setRecentChats] = useState<RecentChat[]>([]);
+  const [fetchError, setFetchError] = useState(false);
+
   useEffect(() => {
     if (!userId) return;
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/recent-chats`, {
       headers: { "x-clerk-id": userId }
     })
       .then(res => res.json())
-      .then(setRecentChats)
-      .catch(() => {});
+      .then(data => {
+        if (Array.isArray(data)) {
+          setRecentChats(data);
+          setFetchError(false);
+        } else {
+          // Not an array: could be error msg or something else
+          setRecentChats([]);
+          setFetchError(true);
+          // Optionally log the error/data for debugging
+          // console.warn("recentChats API data not array:", data);
+        }
+      })
+      .catch(() => {
+        setRecentChats([]);
+        setFetchError(true);
+      });
   }, [userId]);
+
   return (
     <aside className="h-screen w-[210px] fixed top-0 left-0 z-10 bg-background/70 border-r border-accent/15 pt-6 px-0 flex flex-col">
       <div className="mb-8 px-6">
@@ -49,21 +65,23 @@ export default function Sidebar() {
         Recent Chats
       </div>
       <div className="flex-1 px-2 overflow-y-auto">
-        {recentChats.length === 0 ? (
-          <div className="text-xs text-muted-foreground px-4">No recent chats</div>
-        ) : (
-          recentChats.map(chat => (
-            <Link 
-              key={chat.id} 
-              href={`/qna/pdf/${chat.id}`}
-              className="flex items-center gap-2 px-4 py-2 mb-1 rounded text-sm bg-accent/0 hover:bg-accent/10 text-foreground/80"
-              title={chat.question}
-            >
-              <MessageSquare className="w-4 h-4 text-accent" />
-              <span className="truncate">{chat.question.slice(0, 30)}...</span>
-            </Link>
-          ))
-        )}
+        {fetchError
+          ? <div className="text-xs text-red-400 px-4">Failed to load chats</div>
+          : (recentChats.length === 0 
+              ? <div className="text-xs text-muted-foreground px-4">No recent chats</div>
+              : recentChats.map(chat => (
+                <Link 
+                  key={chat.id} 
+                  href={`/qna/pdf/${chat.id}`}
+                  className="flex items-center gap-2 px-4 py-2 mb-1 rounded text-sm bg-accent/0 hover:bg-accent/10 text-foreground/80"
+                  title={chat.question}
+                >
+                  <MessageSquare className="w-4 h-4 text-accent" />
+                  <span className="truncate">{chat.question.slice(0, 30)}...</span>
+                </Link>
+              ))
+            )
+        }
       </div>
     </aside>
   );
