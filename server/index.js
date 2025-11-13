@@ -22,6 +22,15 @@ app.get("/", (req, res) => res.send("Server OK!"));
 app.use(express.json()); 
 
 
+process.on('unhandledRejection', err => {
+  console.error('UNHANDLED REJECTION:', err);
+});
+process.on('uncaughtException', err => {
+  console.error('UNCAUGHT EXCEPTION:', err);
+});
+
+
+
 // mount routes
 app.use("/upload", uploadRoute);
 app.use("/chat", chatRoute);
@@ -30,6 +39,8 @@ app.use("/quiz", quizRouter);
 app.use("/user", userRouter);
 app.use("/api/recent-chats", recentChatsRouter);
 app.use('/api/chat-history', chatHistoryRouter);
+
+
 
 
 
