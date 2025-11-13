@@ -26,7 +26,7 @@ Acadlyst is an AI-powered academic assistant SaaS platform built for students. I
 ### 4. **Authentication & Credit System**
 - Secure sign-in via Clerk with personalized user profiles.
 - Free-tier credit system for API usage across Q&A, summarizer, and quiz features.
-- Project owner has unlimited access; ready for future subscription/paywall scaling.
+  
 
 ---
 
@@ -201,6 +201,8 @@ acadlyst/
 3. Wait for "Processing started" message
 4. Ask questions in the chat interface
 5. Get answers with source citations and page numbers
+6. 5. Access saved chats from sidebar for revision.
+
 
 ### **AI Summarizer**
 1. Go to **Summarizer** page
@@ -209,7 +211,6 @@ acadlyst/
    - Paste a YouTube URL
 3. Click "Generate Summary"
 4. View structured bullet-point summary
-5. Access saved summaries from sidebar
 
 ### **Quiz Generator**
 1. Go to **Quiz** page
@@ -219,7 +220,7 @@ acadlyst/
    - Upload PDF
 3. Click "Generate Quiz"
 4. Answer multiple-choice questions
-5. Review saved quizzes anytime from sidebar
+
 
 ---
 
@@ -228,8 +229,7 @@ acadlyst/
 - Clerk authentication for all user sessions
 - API credit limits to prevent abuse
 - Backend validation on all file uploads
-- Separate worker process for secure background jobs
-- Environment variables for all sensitive keys
+- Separate worker process for secure background jobs.
 - PostgreSQL with Prisma for data integrity
 
 
