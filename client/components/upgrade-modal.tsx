@@ -39,7 +39,7 @@ export default function UpgradeModal({ open, onClose, feature }: UpgradeModalPro
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          <div className="rounded-lg border bg-linear-to-br from-purple-50/10 to-blue-50/10 p-6">
+          <div className="rounded-lg border bg-linear-to-br from-pink-50/10 to-pink-50/10 p-6">
             <h3 className="text-3xl font-bold mb-2">
               $5<span className="text-lg font-normal text-muted-foreground">/month</span>
             </h3>
@@ -68,7 +68,7 @@ export default function UpgradeModal({ open, onClose, feature }: UpgradeModalPro
           </Button>
           <Button
             onClick={handleUpgrade}
-            className="flex-1 sm:flex-none bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+            className="flex-1 sm:flex-none bg-linear-to-r from-pink-600 to-orange-600 hover:from-pink-700 hover:to-orange-700"
           >
             Upgrade Now
           </Button>

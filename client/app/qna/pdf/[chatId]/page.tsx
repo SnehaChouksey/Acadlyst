@@ -21,7 +21,7 @@ export default function ChatHistoryDetailPage() {
 
   useEffect(() => {
     if (!chatId) return;
-    fetch(`http://localhost:8000/api/chat-history/${chatId}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chat-history/${chatId}`)
       .then(res => {
         if (res.ok) return res.json();
         if (res.status === 404) setNotFound(true);

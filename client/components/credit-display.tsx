@@ -11,7 +11,7 @@ export default function CreditDisplay() {
 
   useEffect(() => {
     if (userId) {
-      fetch('http://localhost:8000/user/subscription', {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/subscription`, {
         headers: { 'x-clerk-id': userId }
       })
         .then(res => res.json())

@@ -41,7 +41,7 @@ export default function SummarizerPage() {
       const formData = new FormData();
       formData.append('pdf', data.file);
 
-      const res = await fetch('http://localhost:8000/summarizer/pdf', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/summarizer/pdf`, {
         method: 'POST',
         headers: {
          'x-clerk-id': userId || '',
@@ -86,7 +86,7 @@ export default function SummarizerPage() {
   // Helper function to attempt YouTube summary, with retries
   async function tryYoutubeSummary(retries = 3, delay = 1500) {
     try {
-      const res = await fetch('http://localhost:8000/summarizer/youtube', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/summarizer/youtube`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -133,7 +133,7 @@ export default function SummarizerPage() {
       attempts++;
       
       try {
-        const res = await fetch(`http://localhost:8000/summarizer/status/${jobId}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/summarizer/status/${jobId}`);
         const data = await res.json();
 
         console.log(`Poll attempt ${attempts}: Status = ${data.status}`);

@@ -45,7 +45,7 @@ export default function YoutubeQuizTab() {
   // Wrapper function for retries
   async function tryGenerateQuiz(retries = 3, delay = 1600) {
     try {
-      const res = await fetch('http://localhost:8000/quiz/youtube', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz/youtube`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -97,7 +97,7 @@ export default function YoutubeQuizTab() {
       attempts++;
       
       try {
-        const res = await fetch(`http://localhost:8000/quiz/status/${jobId}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz/status/${jobId}`);
         const data = await res.json();
 
         if (data.status === 'completed' && data.questions) {

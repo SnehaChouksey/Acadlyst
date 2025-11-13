@@ -43,7 +43,7 @@ export default function PdfQuizTab() {
       const formData = new FormData();
       formData.append('pdf', data.file);
 
-      const res = await fetch('http://localhost:8000/quiz/pdf', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz/pdf`, {
         method: 'POST',
         headers: {
         'x-clerk-id': userId || '',
@@ -78,7 +78,7 @@ export default function PdfQuizTab() {
       attempts++;
       
       try {
-        const res = await fetch(`http://localhost:8000/quiz/status/${jobId}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz/status/${jobId}`);
         const data = await res.json();
 
         if (data.status === 'completed' && data.questions) {

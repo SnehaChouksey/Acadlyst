@@ -46,7 +46,7 @@ export default function TextQuizTab() {
       setLoading(true);
       setQuiz(null);
 
-      const res = await fetch('http://localhost:8000/quiz/text', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz/text`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json',
                    'x-clerk-id': userId || '',
@@ -81,7 +81,7 @@ export default function TextQuizTab() {
       attempts++;
       
       try {
-        const res = await fetch(`http://localhost:8000/quiz/status/${jobId}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz/status/${jobId}`);
         const data = await res.json();
 
         if (data.status === 'completed' && data.questions) {

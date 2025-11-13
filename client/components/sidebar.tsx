@@ -22,7 +22,7 @@ export default function Sidebar() {
   const [recentChats, setRecentChats] = useState<RecentChat[]>([]);
   useEffect(() => {
     if (!userId) return;
-    fetch('http://localhost:8000/api/recent-chats', {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/recent-chats`, {
       headers: { "x-clerk-id": userId }
     })
       .then(res => res.json())
