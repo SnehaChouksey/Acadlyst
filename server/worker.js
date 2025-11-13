@@ -11,6 +11,13 @@ import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 
 console.log("GOOGLE KEY:", process.env.GOOGLE_API_KEY ? "FOUND" : "NOT FOUND");
 
+console.log("========== REDIS DEBUG ==========");
+console.log("REDIS_HOST:", process.env.REDIS_HOST);
+console.log("REDIS_PORT:", process.env.REDIS_PORT);
+console.log("REDIS_PASSWORD:", process.env.REDIS_PASSWORD ? "SET" : "NOT SET");
+console.log("=================================");
+
+
 
 
 async function downloadPDFFromURL(url) {
@@ -448,7 +455,7 @@ Respond in this EXACT JSON format ONLY:
     concurrency: 10,
     connection: {
       host: process.env.REDIS_HOST,
-      port: parseInt(process.env.REDIS_PORT),
+      port: parseInt(process.env.REDIS_PORT || "6379"),
       password: process.env.REDIS_PASSWORD,
       tls: {}
     }
