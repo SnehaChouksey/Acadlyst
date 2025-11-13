@@ -99,7 +99,7 @@ export default function QA() {
       console.error("Chat fetch error:", err);
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "⚠️ Error connecting to the server. Please try again." },
+        { role: "assistant", content: " Error connecting to the server. Please try again." },
       ]);
     } finally {
       setLoading(false);
