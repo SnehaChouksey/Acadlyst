@@ -24,7 +24,7 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage });
 
-// POST /quiz/pdf
+
 router.post("/pdf", upload.single("pdf"), async (req, res) => {
   try {
     if (!req.file) {
@@ -36,7 +36,7 @@ router.post("/pdf", upload.single("pdf"), async (req, res) => {
       return res.status(401).json({ error: "Unauthorized - Please sign in" });
     }
 
-    // Check credits - FIXED: Use "quiz" instead of "summarizer"
+    
     const creditCheck = await checkCredits(clerkId, "quiz");
     if (!creditCheck.hasCredits && !creditCheck.isOwner) {
       return res.status(403).json({
@@ -46,7 +46,7 @@ router.post("/pdf", upload.single("pdf"), async (req, res) => {
       });
     }
 
-    // Deduct credit - FIXED: Use "quiz" instead of "summarizer"
+  
     await deductCredits(clerkId, "quiz");
 
     const job = await queue.add(
@@ -70,7 +70,7 @@ router.post("/pdf", upload.single("pdf"), async (req, res) => {
   }
 });
 
-// POST /quiz/text
+
 router.post("/text", async (req, res) => {
   try {
     const { text } = req.body;
@@ -84,7 +84,7 @@ router.post("/text", async (req, res) => {
       return res.status(401).json({ error: "Unauthorized - Please sign in" });
     }
 
-    // Check credits - FIXED: Use "quiz" instead of "summarizer"
+    
     const creditCheck = await checkCredits(clerkId, "quiz");
     if (!creditCheck.hasCredits && !creditCheck.isOwner) {
       return res.status(403).json({
@@ -94,7 +94,7 @@ router.post("/text", async (req, res) => {
       });
     }
 
-    // Deduct credit - FIXED: Use "quiz" instead of "summarizer"
+    
     await deductCredits(clerkId, "quiz");
 
     const job = await queue.add(
@@ -118,7 +118,7 @@ router.post("/text", async (req, res) => {
   }
 });
 
-// POST /quiz/youtube
+
 router.post("/youtube", async (req, res) => {
   try {
     const { url } = req.body;
@@ -132,7 +132,7 @@ router.post("/youtube", async (req, res) => {
       return res.status(401).json({ error: "Unauthorized - Please sign in" });
     }
 
-    // Check credits - FIXED: Use "quiz" instead of "summarizer"
+    
     const creditCheck = await checkCredits(clerkId, "quiz");
     if (!creditCheck.hasCredits && !creditCheck.isOwner) {
       return res.status(403).json({
@@ -144,7 +144,7 @@ router.post("/youtube", async (req, res) => {
     
     console.log("YouTube quiz request for:", url);
 
-    // Deduct credit - FIXED: Use "quiz" instead of "summarizer"
+    
     await deductCredits(clerkId, "quiz");
 
     const transcript = await getYouTubeTranscript(url);
@@ -172,7 +172,7 @@ router.post("/youtube", async (req, res) => {
   }
 });
 
-// GET /quiz/status/:jobId
+
 router.get("/status/:jobId", async (req, res) => {
   try {
     const job = await queue.getJob(req.params.jobId);

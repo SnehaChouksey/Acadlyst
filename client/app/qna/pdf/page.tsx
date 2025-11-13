@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React from "react";
 import FileUploadComponent from "@/components/file-upload";
@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Send, AlertCircle, CheckCircle } from "lucide-react";
 import { useAuth } from "@clerk/nextjs";
+import Sidebar from "@/components/sidebar";
+import { FeatureNavbar } from "@/components/ui/featureNavbar";
 
 interface Doc {
   pageContent?: string;
@@ -17,17 +19,17 @@ interface Doc {
 }
 
 interface IMessage {
-  role: 'assistant' | 'user';
+  role: "assistant" | "user";
   content?: string;
   documents?: Doc[];
 }
 
 export default function QA() {
-  const { userId } = useAuth(); 
-  const [input, setInput] = React.useState<string>('');
+  const { userId } = useAuth();
+  const [input, setInput] = React.useState<string>("");
   const [messages, setMessages] = React.useState<IMessage[]>([
     {
-      role: 'assistant',
+      role: "assistant",
       content: "👋 Hi! I'm your AI study assistant. Upload your notes or ask me anything about them!",
     },
   ]);
@@ -36,7 +38,6 @@ export default function QA() {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const [loading, setLoading] = React.useState(false);
 
-  // Auto-scroll to bottom on new messages
   React.useEffect(() => {
     const el = containerRef.current;
     if (el) {
@@ -46,15 +47,15 @@ export default function QA() {
 
   const handleFileUploaded = async (data: { file: File; response: any }) => {
     console.log("File upload callback received:", data);
-    
+
     if (data.response?.message) {
       setUploadStatus("✅ PDF uploaded! Processing started...");
       setPdfLoaded(true);
-      
-      setMessages(prev => [
+
+      setMessages((prev) => [
         ...prev,
         {
-          role: 'assistant',
+          role: "assistant",
           content: `✅ I've successfully loaded "${data.file.name}" and indexed it. You can now ask questions about its content!`,
         },
       ]);
@@ -69,36 +70,36 @@ export default function QA() {
       return;
     }
 
-    // Add user message immediately
-    setMessages(prev => [...prev, { role: 'user', content: input }]);
+    setMessages((prev) => [...prev, { role: "user", content: input }]);
     const userMessage = input;
-    setInput('');
+    setInput("");
     setLoading(true);
 
     try {
       const res = await fetch(`http://localhost:8000/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json',
-                   'x-clerk-id': userId || '', 
-         },
-        body: JSON.stringify({ query: userMessage })
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-clerk-id": userId || "",
+        },
+        body: JSON.stringify({ query: userMessage }),
       });
 
       const data = await res.json();
 
-      setMessages(prev => [
+      setMessages((prev) => [
         ...prev,
         {
-          role: 'assistant',
-          content: data?.answer ?? 'No response from server.',
+          role: "assistant",
+          content: data?.answer ?? "No response from server.",
           documents: data?.sources ?? [],
         },
       ]);
     } catch (err) {
-      console.error('Chat fetch error:', err);
-      setMessages(prev => [
+      console.error("Chat fetch error:", err);
+      setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: '⚠️ Error connecting to the server. Please try again.' },
+        { role: "assistant", content: "⚠️ Error connecting to the server. Please try again." },
       ]);
     } finally {
       setLoading(false);
@@ -106,99 +107,108 @@ export default function QA() {
   };
 
   return (
-    <div className="flex flex-col items-center min-h-[calc(100vh-4rem)] px-4 py-8 bg-background text-foreground">
-      {/* Header: title + upload */}
-      <div className="w-full max-w-4xl flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-3">
-        <div>
-          <h1 className="text-3xl font-bold">Smart Q&A</h1>
-          <p className="text-muted-foreground text-sm">
-            Upload your PDF notes and ask anything you like
-          </p>
-        </div>
-
-        {/* Upload component */}
-        <FileUploadComponent onUploaded={handleFileUploaded} />
-      </div>
-
-      {/* Status message */}
-      {uploadStatus && (
-        <div className="w-full max-w-4xl mb-4 p-3 bg-green-900/30 border border-green-700 rounded-lg text-green-300 flex items-center gap-2">
-          <CheckCircle className="h-5 w-5" />
-          {uploadStatus}
-        </div>
-      )}
-
-      {/* PDF not loaded warning */}
-      {!pdfLoaded && (
-        <div className="w-full max-w-4xl mb-4 p-3 bg-yellow-900/30 border border-yellow-700 rounded-lg text-yellow-300 flex items-center gap-2">
-          <AlertCircle className="h-5 w-5" />
-          Please upload a PDF to start asking questions
-        </div>
-      )}
-
-      {/* Chat Card */}
-      <Card className="w-full max-w-4xl flex flex-col p-4 border-2">
-        {/* Messages container */}
-        <div
-          ref={containerRef}
-          className="flex-1 overflow-y-auto space-y-4 mb-4 max-h-[65vh] pr-2"
-        >
-          {messages.map((msg, idx) => (
-            <div
-              key={idx}
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div
-                className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm sm:text-base ${
-                  msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'
-                }`}
-              >
-                {msg.content}
-
-                {/* Document references */}
-                {msg.documents && msg.documents.length > 0 && (
-                  <div className="mt-2 text-xs text-muted-foreground">
-                    {msg.documents.map((d, i) => (
-                      <div key={i} className="mt-1">
-                        {d.metadata?.source ? (
-                          <span>📄 {d.metadata.source}{d.metadata.loc?.pageNumber ? ` — p.${d.metadata.loc.pageNumber}` : ''}</span>
-                        ) : (
-                          <span>📄 source unknown</span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+    <>
+      <FeatureNavbar/>
+      <div className="flex h-screen bg-background">
+        <Sidebar />
+        <div className="flex-1 flex flex-col ml-60 pt-16">
+          <div className="flex items-center justify-between px-8 py-4 ">
+            <div>
+              <h1 className="text-2xl font-bold">Smart Q&A</h1>
+              <p className="text-sm text-muted-foreground">
+                Upload your PDF notes and ask anything you like
+              </p>
             </div>
-          ))}
-        </div>
+            <FileUploadComponent onUploaded={handleFileUploaded} />
+          </div>
 
-        {/* Input + send */}
-        <div className="flex gap-2">
-          <Textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask me something about your uploaded notes..."
-            className="resize-none"
-            rows={2}
-            disabled={!pdfLoaded}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                if (!loading && pdfLoaded) handleSend();
-              }
-            }}
-          />
-          <Button 
-            onClick={handleSend} 
-            disabled={!input.trim() || loading || !pdfLoaded} 
-            className="h-[52px] w-[52px]"
-          >
-            <Send className="h-5 w-5" />
-          </Button>
+          {!pdfLoaded && (
+            <div className="mx-8 mt-4 p-3 bg-yellow-700/20 border-l-4 border-yellow-600 rounded text-yellow-700 dark:text-yellow-300 flex items-center gap-2 text-sm">
+              <AlertCircle className="h-5 w-5" />
+              Please upload a PDF to start asking questions
+            </div>
+          )}
+
+          {uploadStatus && (
+            <div className="mx-8 mt-4 p-3 bg-green-600/20 border-l-4 border-green-600 rounded text-green-700 dark:text-green-300 flex items-center gap-2 text-sm">
+              <CheckCircle className="h-5 w-5" />
+              {uploadStatus}
+            </div>
+          )}
+
+          <div className="flex-1 flex flex-col px-8 py-4 overflow-hidden">
+            <Card className="flex-1 flex flex-col bg-card/50 backdrop-blur border rounded-2xl overflow-hidden ">
+              <div
+                ref={containerRef}
+                className="flex-1 overflow-y-auto p-6 space-y-4 scroll-smooth"
+                style={{ scrollbarWidth: "thin" }}
+              >
+                {messages.map((msg, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                  >
+                    <div
+                      className={`max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                        msg.role === "user"
+                          ? "bg-linear-to-r from-[#E23B6D] to-[#FF7CA3] text-white"
+                          : "bg-muted/80 text-foreground"
+                      }`}
+                    >
+                      {msg.content}
+
+                      {msg.documents && msg.documents.length > 0 && (
+                        <div className="mt-2 text-xs opacity-80">
+                          {msg.documents.map((d, i) => (
+                            <div key={i} className="mt-1">
+                              {d.metadata?.source ? (
+                                <span>
+                                  📄 {d.metadata.source}
+                                  {d.metadata.loc?.pageNumber
+                                    ? ` — p.${d.metadata.loc.pageNumber}`
+                                    : ""}
+                                </span>
+                              ) : (
+                                <span>📄 source unknown</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className=" bg-card/10 p-0">
+                <div className="flex gap-2 max-w-4xl mx-auto mt-1">
+                  <Textarea
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="Ask me something about your uploaded notes..."
+                    className="resize-none w-2xl rounded-xl"
+                    rows={2}
+                    disabled={!pdfLoaded}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        if (!loading && pdfLoaded) handleSend();
+                      }
+                    }}
+                  />
+                  <Button
+                    onClick={handleSend}
+                    disabled={!input.trim() || loading || !pdfLoaded}
+                    className="h-[60px] w-[70px] rounded-lg bg-transparent hover:bg-accent/70 "
+                  >
+                    <Send className="h-20 w-20 text-foreground" />
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </div>
         </div>
-      </Card>
-    </div>
+      </div>
+    </>
   );
 }

@@ -4,13 +4,13 @@ const prisma = new PrismaClient();
 async function main() {
   const user = await prisma.user.create({
     data: {
-      clerkId: 'user_34ylwjGjTisYzcPr4FAp8Nae6Vw',  // ← Replace with your actual ID!
-      email: 'snehachoukseyobc@gmail.com',      // ← Your email
+      clerkId: 'user_34ylwjGjTisYzcPr4FAp8Nae6Vw',  
+      email: 'snehachoukseyobc@gmail.com',      
       name: 'Sneha chouksey',
-      isOwner: true,  // Set to true for unlimited credits
+      isOwner: true,  
     }
   });
-  console.log('✅ User created:', user);
+  console.log(' User created:', user);
 }
 
 main()

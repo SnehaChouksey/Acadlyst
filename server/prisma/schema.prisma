@@ -75,3 +75,13 @@ model Subscription {
 
   @@index([userId])
 }
+model ChatHistory {
+  id        String   @id @default(uuid())
+  userId    String   // Clerk user ID
+  question  String
+  answer    String
+  sources   String?  // JSON stringified sources
+  createdAt DateTime @default(now())
+  
+  @@index([userId, createdAt])
+}

@@ -5,6 +5,9 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { QdrantVectorStore } from "@langchain/qdrant";
 import { TaskType } from "@google/generative-ai";
 import { checkChatMessageCredits, deductChatMessageCredits } from "../services/userService.js";  // CHANGED
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 const router = express.Router();
 
@@ -13,7 +16,7 @@ router.post("/", async (req, res) => {
   if (!clerkId) return res.status(401).json({ error: "Unauthorized" });
 
   try {
-    // CHANGED: Check chat message credits
+    // Check chat message credits
     const { hasCredits, remaining } = await checkChatMessageCredits(clerkId);
     if (!hasCredits) {
       return res.status(403).json({ 
@@ -64,7 +67,7 @@ router.post("/", async (req, res) => {
       });
     }
 
-    // CHANGED: Deduct chat message credit
+    //  Deduct chat message credit
     await deductChatMessageCredits(clerkId);
 
     docs.forEach((d, i) => {
@@ -96,14 +99,29 @@ router.post("/", async (req, res) => {
       ? response 
       : (response.content || JSON.stringify(response));
 
+    const sources = docs.map(d => ({
+      content: d.pageContent.substring(0, 200),
+      metadata: d.metadata
+    }));
+
+    
+    await prisma.chatHistory.create({
+      data: {
+        userId: clerkId,
+        question: userQuery,
+        answer: answer,
+        sources: JSON.stringify(sources)
+      }
+    });
+
     console.log("Chat completed successfully");
     return res.json({
       answer: answer,
-      sources: docs.map(d => ({
-        content: d.pageContent.substring(0, 200),
-        metadata: d.metadata
-      }))
+      sources: sources
     });
+
+
+    
 
   } catch (err) {
     console.error("Chat error:", err);

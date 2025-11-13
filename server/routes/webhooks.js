@@ -32,7 +32,7 @@ router.post("/clerk", express.raw({ type: "application/json" }), async (req, res
         return res.status(400).json({ error: "No email address in webhook data" });
       }
 
-      // Create/update user in database
+      
       await getOrCreateUser(
         id,
         email,
@@ -40,11 +40,11 @@ router.post("/clerk", express.raw({ type: "application/json" }), async (req, res
         image_url
       );
 
-      // 🔥 CRITICAL FIX: Set Clerk metadata with plan
+    
       try {
         await clerkClient.users.updateUserMetadata(id, {
           publicMetadata: {
-            plan: 'free_user'  // Set free plan by default
+            plan: 'free_user'  
           }
         });
         console.log("✅ User webhook processed and plan set to 'free_user'");

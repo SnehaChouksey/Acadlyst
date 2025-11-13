@@ -112,10 +112,12 @@ export default function PdfQuizTab() {
 
   return (
     <>
-    <Card className="border border-slate-700 bg-slate-800 shadow-2xl">
+    
+    <Card className="border border-accent/50 bg-card shadow-2xl">
       <CardContent className="p-8">
         {!loading && (
-          <div className="flex flex-col items-center justify-center border-2 border-dashed border-slate-600 rounded-xl p-12 bg-slate-700/30">
+          <div className="flex flex-col items-center justify-center  rounded-xl p-12 bg-card">
+            <p className='text-foreground , text-md text-xl mb-4'> Upload a PDF and test your knowledge with Acadlyst 🧠</p>
             <FileUploadComponent onUploaded={handleFileUpload} />
           </div>
         )}
@@ -124,9 +126,9 @@ export default function PdfQuizTab() {
           <div className="space-y-6">
             <div>
               <h3 className="font-semibold text-lg mb-3 text-slate-300">Generating Quiz</h3>
-              <Skeleton className="h-40 w-full bg-slate-600" />
+              <Skeleton className="h-40 w-full bg-accent/30" />
             </div>
-            <p className="text-center text-slate-400 text-sm">Analyzing document and generating quiz questions...</p>
+            <p className="text-center text-muted-foreground text-sm">Analyzing document and generating quiz questions...</p>
           </div>
         )}
       </CardContent>

@@ -10,13 +10,13 @@ export async function getOrCreateUser(clerkId, email, name, profileImage) {
       where: { clerkId },
     });
 
-    // If found, return user
+    
     if (user) return user;
 
     if (email) {
       const userByEmail = await prisma.user.findUnique({ where: { email } });
       if (userByEmail) {
-        // Update existing row to new Clerk ID!
+  
         user = await prisma.user.update({
           where: { email },
           data: {
@@ -48,12 +48,12 @@ export async function getOrCreateUser(clerkId, email, name, profileImage) {
           chatMessageCredits: isOwner ? 999999 : 2,
         },
       });
-      console.log("✅ New user created:", user.email, "| Owner:", isOwner);
+      
     
 
     return user;
   } catch (error) {
-    console.error("❌ Error creating user:", error);
+    
     throw error;
   }
 }
@@ -66,14 +66,14 @@ export async function checkCredits(clerkId, feature) {
 
     if (!user) throw new Error("User not found");
 
-    // 1. Check if user is Premium via Clerk Billing
+    
     try {
       const clerkUser = await clerkClient.users.getUser(clerkId);
       const clerkPlanKey = clerkUser.publicMetadata?.plan;
       
       console.log("🔍 Clerk plan key:", clerkPlanKey);
       
-      // Check for premium plan key
+    
       if (clerkPlanKey === 'premium') {
         console.log("✅ User is premium via Clerk");
         return { 
@@ -84,7 +84,7 @@ export async function checkCredits(clerkId, feature) {
         };
       }
       
-      // Free plan user - continue to credit checking
+      
       if (clerkPlanKey === 'free_user') {
         console.log("📋 User is on free plan, checking credits");
       }
@@ -94,7 +94,7 @@ export async function checkCredits(clerkId, feature) {
       console.log("Falling back to database plan");
     }
 
-    // 2. Owner gets unlimited credits
+    
     if (user.isOwner) {
       return { 
         hasCredits: true, 
@@ -104,7 +104,7 @@ export async function checkCredits(clerkId, feature) {
       };
     }
     
-    // 3. Check DB plan (manual premium upgrade)
+    
     if (user.plan === "PREMIUM") {
       return { 
         hasCredits: true, 
@@ -114,7 +114,7 @@ export async function checkCredits(clerkId, feature) {
       };
     }
     
-    // 4. FREE TIER: Check if credits need reset (monthly on 1st)
+    
     const now = new Date();
     const lastReset = new Date(user.lastCreditResetAt);
     
@@ -131,9 +131,9 @@ export async function checkCredits(clerkId, feature) {
           
         },
       });
-      console.log("✅ Credits reset for user:", user.email);
+      console.log(" Credits reset for user:", user.email);
       
-      // Refresh user data after reset
+      
       const updatedUser = await prisma.user.findUnique({
         where: { clerkId },
       });
@@ -141,20 +141,19 @@ export async function checkCredits(clerkId, feature) {
       return checkCreditsForFeature(updatedUser, feature);
     }
 
-    // 5. Check feature-specific credits for free users
+    
     return checkCreditsForFeature(user, feature);
     
   } catch (error) {
-    console.error("❌ Error checking credits:", error);
+    console.error(" Error checking credits:", error);
     throw error;
   }
 }
 
-// Helper function to check credits for a specific feature
 function checkCreditsForFeature(user, feature) {
   let creditsField = "";
   
-  // Map your backend feature names to credit fields
+  
   switch (feature) {
     case "summarizer":
       creditsField = "summarizerCredits";
@@ -163,7 +162,7 @@ function checkCreditsForFeature(user, feature) {
       creditsField = "quizCredits";
       break;
     case "chat":
-    case "pdf_chatbot":  // Handle both names
+    case "pdf_chatbot":  
       creditsField = "chatCredits";
       break;
     default:
@@ -194,12 +193,12 @@ export async function deductCredits(clerkId, feature) {
 
     if (!user) throw new Error("User not found");
 
-    // Check Clerk for premium status before deducting
+    
     try {
       const clerkUser = await clerkClient.users.getUser(clerkId);
       const clerkPlanKey = clerkUser.publicMetadata?.plan;
       
-      // Premium users don't use credits
+      
       if (clerkPlanKey === 'premium') {
         console.log("✅ Premium user - no deduction");
         return { success: true, remaining: 999999 };
@@ -208,7 +207,7 @@ export async function deductCredits(clerkId, feature) {
       console.log("⚠️ Clerk API not available for deduction check");
     }
 
-    // Owner and DB Premium don't use credits
+
     if (user.isOwner || user.plan === "PREMIUM") {
       return { success: true, remaining: 999999 };
     }
@@ -216,7 +215,7 @@ export async function deductCredits(clerkId, feature) {
     let creditsField = "";
     let counterField = "";
 
-    // Map your backend feature names to credit fields
+    
     switch (feature) {
       case "summarizer":
         creditsField = "summarizerCredits";
@@ -227,7 +226,7 @@ export async function deductCredits(clerkId, feature) {
         counterField = "totalQuizzes";
         break;
       case "chat":
-      case "pdf_chatbot":  // Handle both names
+      case "pdf_chatbot":  
         creditsField = "chatCredits";
         counterField = "totalChats";
         break;
@@ -247,11 +246,11 @@ export async function deductCredits(clerkId, feature) {
       },
     });
 
-    console.log(`✅ Deducted 1 ${feature} credit. Remaining:`, updated[creditsField]);
+    console.log(` Deducted 1 ${feature} credit. Remaining:`, updated[creditsField]);
     return { success: true, remaining: updated[creditsField] };
     
   } catch (error) {
-    console.error("❌ Error deducting credits:", error);
+    console.error(" Error deducting credits:", error);
     throw error;
   }
 }
@@ -279,7 +278,7 @@ export async function getUserStats(clerkId) {
         currentPlan = 'FREE';
       }
     } catch (clerkError) {
-      console.log("⚠️ Clerk API not available for stats");
+      console.log(" Clerk API not available for stats");
     }
 
     const isPremium = isClerkPremium || currentPlan === 'PREMIUM' || user.isOwner;
@@ -302,11 +301,11 @@ export async function getUserStats(clerkId) {
       },
     };
   } catch (error) {
-    console.error("❌ Error fetching stats:", error);
+    console.error(" Error fetching stats:", error);
     throw error;
   }
 }
-// ADD THESE TWO NEW FUNCTIONS AT THE END
+
 
 export async function checkChatMessageCredits(clerkId) {
   try {
@@ -316,7 +315,7 @@ export async function checkChatMessageCredits(clerkId) {
 
     if (!user) throw new Error("User not found");
 
-    // Check Clerk for premium status
+    
     try {
       const clerkUser = await clerkClient.users.getUser(clerkId);
       const clerkPlanKey = clerkUser.publicMetadata?.plan;
@@ -329,12 +328,12 @@ export async function checkChatMessageCredits(clerkId) {
       console.log("⚠️ Clerk API not available for chat message check");
     }
 
-    // Owner gets unlimited
+    
     if (user.isOwner || user.plan === "PREMIUM") {
       return { hasCredits: true, remaining: 999999, plan: user.plan };
     }
 
-    // Check chat message credits for free users
+    
     const hasCredits = user.chatMessageCredits > 0;
     
     console.log(`📊 Chat message credits check:`, {
@@ -348,7 +347,7 @@ export async function checkChatMessageCredits(clerkId) {
       plan: user.plan || 'FREE',
     };
   } catch (error) {
-    console.error("❌ Error checking chat message credits:", error);
+    console.error(" Error checking chat message credits:", error);
     throw error;
   }
 }
@@ -361,20 +360,20 @@ export async function deductChatMessageCredits(clerkId) {
 
     if (!user) throw new Error("User not found");
 
-    // Check Clerk for premium status
+  
     try {
       const clerkUser = await clerkClient.users.getUser(clerkId);
       const clerkPlanKey = clerkUser.publicMetadata?.plan;
       
       if (clerkPlanKey === 'premium') {
-        console.log("✅ Premium user - no chat message deduction");
+        console.log(" Premium user - no chat message deduction");
         return { success: true, remaining: 999999 };
       }
     } catch (clerkError) {
-      console.log("⚠️ Clerk API not available for deduction");
+      console.log(" Clerk API not available for deduction");
     }
 
-    // Premium/Owner don't use credits
+    
     if (user.isOwner || user.plan === "PREMIUM") {
       return { success: true, remaining: 999999 };
     }
@@ -391,10 +390,10 @@ export async function deductChatMessageCredits(clerkId) {
       },
     });
 
-    console.log(`✅ Deducted 1 chat message credit. Remaining:`, updated.chatMessageCredits);
+    console.log(` Deducted 1 chat message credit. Remaining:`, updated.chatMessageCredits);
     return { success: true, remaining: updated.chatMessageCredits };
   } catch (error) {
-    console.error("❌ Error deducting chat message credits:", error);
+    console.error(" Error deducting chat message credits:", error);
     throw error;
   }
 }

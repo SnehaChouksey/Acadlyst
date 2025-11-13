@@ -33,50 +33,61 @@ export default function YoutubeQuizTab() {
   const [showUpgrade, setShowUpgrade] = useState(false);
 
   const handleGenerateQuiz = async () => {
-    if (!youtubeUrl.trim()) {
-      setError('Please paste a YouTube URL');
-      return;
-    }
+  if (!youtubeUrl.trim()) {
+    setError('Please paste a YouTube URL');
+    return;
+  }
 
+  setLoading(true);
+  setQuiz(null);
+  setError('');
+
+  // Wrapper function for retries
+  async function tryGenerateQuiz(retries = 3, delay = 1600) {
     try {
-      setLoading(true);
-      setQuiz(null);
-      setError('');
-
       const res = await fetch('http://localhost:8000/quiz/youtube', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' ,
-                   'x-clerk-id': userId || '',
-                 },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-clerk-id': userId || '',
+        },
         body: JSON.stringify({ url: youtubeUrl })
       });
 
       if (res.status === 403) {
-        // Out of credits
         setShowUpgrade(true);
+        setLoading(false);
         return;
-        }
-
+      }
 
       const data = await res.json();
 
-        
       if (!res.ok) {
-        setError(data.error || 'Error generating quiz');
-        setLoading(false);
+        if (retries > 0) {
+          setTimeout(() => tryGenerateQuiz(retries - 1, delay), delay);
+        } else {
+          setError(data.error || 'Error generating quiz');
+          setLoading(false);
+        }
         return;
       }
 
       if (data.jobId) {
         pollJobStatus(data.jobId);
       }
-
     } catch (error) {
-      console.error('Error:', error);
-      setError('Error generating quiz. Please try again.');
-      setLoading(false);
+      if (retries > 0) {
+        setTimeout(() => tryGenerateQuiz(retries - 1, delay), delay);
+      } else {
+        setError('Error generating quiz. Please try again.');
+        setLoading(false);
+      }
     }
-  };
+  }
+
+  tryGenerateQuiz();
+};
+
 
   const pollJobStatus = async (jobId: string) => {
     const maxAttempts = 120;
@@ -123,11 +134,12 @@ export default function YoutubeQuizTab() {
 
   return (
     <>
-    <Card className="border border-slate-700 bg-slate-800 shadow-2xl">
-      <CardContent className="p-8 space-y-4">
-        <div className="flex items-center gap-2 mb-4">
-          <Youtube className="h-5 w-5 text-red-500" />
-          <label className="text-sm font-semibold text-slate-300">YouTube Video URL</label>
+    <Card className="border border-accent/30 bg-card shadow-2xl max-h-100">
+      <CardContent className="p-20 space-y-4">
+        
+        <div className="flex items-center gap-2 flex-col mb-4">
+          <Youtube className="glex-col flex h-15 w-15 text-red-500" />
+          <label className="text-2xl font-semibold text-slate-300">YouTube Video URL</label>
         </div>
 
         <input
@@ -138,7 +150,7 @@ export default function YoutubeQuizTab() {
             setError('');
           }}
           placeholder="Paste YouTube link (e.g., https://www.youtube.com/watch?v=..."
-          className="w-full p-3 bg-slate-700 text-slate-100 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500"
+          className="w-full p-3 bg-background text-slate-100 border border-foreground/20 hover:border-white rounded-lg focus:outline-none focus:border-blue-500"
         />
 
         {error && (
@@ -149,8 +161,8 @@ export default function YoutubeQuizTab() {
 
         {loading && (
           <div className="space-y-4">
-            <Skeleton className="h-40 w-full bg-slate-600" />
-            <p className="text-center text-slate-400 text-sm">Fetching transcript and generating quiz...</p>
+            <Skeleton className="max-h-70 w-full bg-accent/20" />
+            <p className="text-center text-muted-foreground text-sm">Fetching transcript and generating quiz...</p>
           </div>
         )}
 
@@ -158,7 +170,7 @@ export default function YoutubeQuizTab() {
           <Button
             onClick={handleGenerateQuiz}
             disabled={!youtubeUrl.trim() || loading}
-            className="w-full bg-red-600 hover:bg-red-700 h-12 text-base font-semibold"
+            className="w-full bg-pink-700 hover:bg-pink-900 h-12 text-foreground font-semibold"
           >
             Generate Quiz from Video
           </Button>

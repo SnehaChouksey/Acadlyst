@@ -45,9 +45,9 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
+  --background: oklch(98.418% 0.01193 96.475);
+  --foreground: rgb(10, 10, 10);
+  --card: oklch(100% 0.00011 271.152);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
@@ -57,7 +57,7 @@
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
+  --accent:                 oklch(54.792% 0.2196 7.253);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
@@ -81,17 +81,17 @@
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
+  --card: oklch(25.615% 0.00003 271.152);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.922 0 0);
   --primary-foreground: oklch(0.205 0 0);
   --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
+  --secondary-foreground: oklch(67.587% 0.21745 38.79);
   --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
+  --muted-foreground: oklch(88.531% 0.0001 271.152);
+  --accent: oklch(64.082% 0.25671 7.745);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
@@ -119,4 +119,37 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+/* styles/globals.css */
+
+.grid-container {
+  /* Use viewport units to ensure it covers the entire screen */
+  width: 100vw;
+  height: 100vh;
+  
+  /* Set up the main grid layout */
+  display: grid;
+  
+  /* 3 Rows: Each row takes an equal fraction of the height (fr) */
+  grid-template-rows: repeat(3, 1fr);
+  
+  /* 10 Columns: Each column takes an equal fraction of the width (fr) */
+  grid-template-columns: repeat(10, 1fr);
+  
+  /* Optional: For visual resemblance to your sketch */
+  border: 2px solid blue;
+}
+
+/* Optional: To show the grid structure */
+.grid-item {
+  /* Use a lighter color for the internal grid lines */
+  border: 1px solid #ccc; 
+  /* Important for containing the absolutely positioned ImagePlaceholder */
+  position: relative; 
+}
+
+/* Optional: To remove default body/html padding */
+body, html {
+  margin: 0;
+  padding: 0;
 }

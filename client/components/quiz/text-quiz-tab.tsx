@@ -118,18 +118,18 @@ export default function TextQuizTab() {
 
   return (
     <>
-    <Card className="border border-slate-700 bg-slate-800 shadow-2xl">
-      <CardContent className="p-8 space-y-4">
+    <Card className="border border-accent/40 max-h-100 shadow-2xl">
+      <CardContent className="px-6 space-y-4">
         <textarea
           value={textInput}
           onChange={(e) => setTextInput(e.target.value)}
           placeholder="Paste your study notes, lecture content, or any text you want to create a quiz from..."
-          className="w-full h-64 p-4 bg-slate-700 text-slate-100 border border-slate-600 rounded-lg resize-none focus:outline-none focus:border-blue-500"
+          className="w-full h-64 p-4 bg-background text-foreground border border-foreground/20 rounded-lg resize-none focus:outline-none focus:border-blue-500"
         />
 
         {loading && (
           <div className="space-y-4">
-            <Skeleton className="h-40 w-full bg-slate-600" />
+            <Skeleton className="h-20 w-full bg-accent/30" />
             <p className="text-center text-slate-400 text-sm">Generating quiz questions...</p>
           </div>
         )}
@@ -138,7 +138,7 @@ export default function TextQuizTab() {
           <Button
             onClick={handleGenerateQuiz}
             disabled={!textInput.trim() || loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 h-12 text-base"
+            className="w-full bg-pink-700 hover:bg-pink-900 text-foreground h-12 "
           >
             Generate Quiz from Text
           </Button>

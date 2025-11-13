@@ -42,7 +42,7 @@ router.post("/pdf", upload.single("pdf"), async (req, res) => {
       return res.status(401).json({ error: "Unauthorized - Please sign in" });
     }
 
-    // Check credits
+    
     const creditCheck = await checkCredits(clerkId, "chat");
     if (!creditCheck.hasCredits && !creditCheck.isOwner) {
       return res.status(403).json({
@@ -52,7 +52,7 @@ router.post("/pdf", upload.single("pdf"), async (req, res) => {
       });
     }
 
-    // Deduct credit
+    
     await deductCredits(clerkId, "chat");
 
     console.log("File uploaded to Cloudinary:", req.file.path);

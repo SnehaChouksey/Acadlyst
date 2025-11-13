@@ -24,10 +24,10 @@ async function downloadPDFFromURL(url) {
   }
 }
 
-// HELPER: Sleep function for rate limiting
+// Sleep function for rate limiting
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// HELPER: Split text into chunks
+// Split text into chunks
 async function getTextChunks(text, chunkSize = 5000, overlap = 500) {
   const chunks = [];
   for (let i = 0; i < text.length; i += chunkSize - overlap) {
@@ -36,7 +36,7 @@ async function getTextChunks(text, chunkSize = 5000, overlap = 500) {
   return chunks;
 }
 
-// HELPER: Parse JSON response from LLM
+//  Parse JSON response from LLM
 function parseJSONResponse(response) {
   let rawContent = "";
   
@@ -86,7 +86,7 @@ const worker = new Worker(
 
         const textLength = sourceText.length;
         const llm = new ChatGoogleGenerativeAI({
-          model: "gemini-2.0-flash-lite",
+          model: "gemini-2.5-flash-lite",
           maxRetries: 1,
           temperature: 0.3,
           apiKey: process.env.GOOGLE_API_KEY,

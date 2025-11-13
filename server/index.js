@@ -6,6 +6,8 @@ import summarizerRoute from "./routes/summarizer.js";
 import quizRouter from "./routes/quiz.js";
 import webhookRouter from "./routes/webhooks.js";
 import userRouter from "./routes/user.js";
+import recentChatsRouter from "./routes/recentChats.js";
+import chatHistoryRouter from './routes/chatHistory.js';
 
 
 
@@ -26,6 +28,9 @@ app.use("/chat", chatRoute);
 app.use("/summarizer", summarizerRoute);
 app.use("/quiz", quizRouter);
 app.use("/user", userRouter);
+app.use("/api/recent-chats", recentChatsRouter);
+app.use('/api/chat-history', chatHistoryRouter);
+
 
 
 app.get("/summariser/test", (req, res) => {

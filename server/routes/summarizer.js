@@ -26,7 +26,7 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage });
 
-// POST /summarizer/pdf
+
 router.post("/pdf", upload.single("pdf"), async (req, res) => {
   try {
     if (!req.file) {
@@ -38,7 +38,7 @@ router.post("/pdf", upload.single("pdf"), async (req, res) => {
       return res.status(401).json({ error: "Unauthorized - Please sign in" });
     }
 
-    // Check credits
+    
     const creditCheck = await checkCredits(clerkId, "summarizer");
     if (!creditCheck.hasCredits && !creditCheck.isOwner) {
       return res.status(403).json({
@@ -48,7 +48,7 @@ router.post("/pdf", upload.single("pdf"), async (req, res) => {
       });
     }
 
-    // Deduct credit
+    
     await deductCredits(clerkId, "summarizer");
 
 
@@ -56,7 +56,7 @@ router.post("/pdf", upload.single("pdf"), async (req, res) => {
       "file-ready",
       JSON.stringify({
         filename: req.file.originalname,
-        url: req.file.path, // Cloudinary URL
+        url: req.file.path, 
         jobType: "summarize",
         clerkId
     
@@ -74,7 +74,7 @@ router.post("/pdf", upload.single("pdf"), async (req, res) => {
   }
 });
 
-// POST /summarizer/youtube
+
 router.post("/youtube", async (req, res) => {
   try {
     const { url } = req.body;
@@ -88,7 +88,7 @@ router.post("/youtube", async (req, res) => {
       return res.status(401).json({ error: "Unauthorized - Please sign in" });
     }
 
-    // Check credits
+    
     const creditCheck = await checkCredits(clerkId, "summarizer");
     if (!creditCheck.hasCredits && !creditCheck.isOwner) {
       return res.status(402).json({
@@ -100,7 +100,7 @@ router.post("/youtube", async (req, res) => {
 
     console.log("YouTube summarizer request for:", url);
 
-    // Deduct credit
+    
     await deductCredits(clerkId, "summarizer");
 
 
@@ -129,7 +129,7 @@ router.post("/youtube", async (req, res) => {
   }
 });
 
-// GET /summarizer/status/:jobId
+
 router.get("/status/:jobId", async (req, res) => {
   try {
     const job = await queue.getJob(req.params.jobId);
