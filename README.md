@@ -27,7 +27,7 @@ Acadlyst is an AI-powered academic assistant SaaS platform built for students. I
 ### 4. **Authentication & Credit System**
 - Secure sign-in via Clerk with personalized user profiles.
 - Free-tier credit system for API usage across Q&A, summarizer, and quiz features.
-- Paid tier of unlimited usage of these features.
+- Paid tier for unlimited usage of these features.
   
 
 ---
@@ -61,6 +61,7 @@ Acadlyst is an AI-powered academic assistant SaaS platform built for students. I
 - Neon DB (PostgreSQL)
 - Upstash Redis (job queue)
 - Cloudinary (CDN & storage)
+- Docker Compose (containerization)
 
 ---
 
@@ -192,6 +193,25 @@ acadlyst/
    ```
 
    Visit: `http://localhost:3000`
+
+---
+### **Option 2: Docker Setup**
+
+If you prefer containerized deployment:
+
+1. **Ensure Docker & Docker Compose are installed**
+
+2. **Set up environment variables** (as shown above in server/.env)
+
+3. **Run with Docker Compose:**
+   ```bash
+   cd server
+   docker-compose up --build
+   ```
+
+4. **Access the application:**
+   - Backend API: `http://localhost:8000`
+   - Frontend: `http://localhost:3000` (run separately or add to docker-compose)
 
 ---
 
