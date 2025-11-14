@@ -22,10 +22,12 @@ Acadlyst is an AI-powered academic assistant SaaS platform built for students. I
 ### 3. **Quiz Generator**
 - **Multiple Input Types**: Generate quizzes from **text**, **YouTube videos**, or **PDF uploads**.
 - **MCQ Auto-Generation**: AI creates challenging multiple-choice questions with plausible distractors and correct answers.
+- **Insights and Scoreboard**: Get quick insights about your attempted quiz.
 
 ### 4. **Authentication & Credit System**
 - Secure sign-in via Clerk with personalized user profiles.
 - Free-tier credit system for API usage across Q&A, summarizer, and quiz features.
+- Paid tier of unlimited usage of these features.
   
 
 ---
@@ -56,7 +58,7 @@ Acadlyst is an AI-powered academic assistant SaaS platform built for students. I
 - Vercel (frontend hosting)
 - Render (backend API + worker)
 - Qdrant Cloud (vector database)
-- Neon (PostgreSQL)
+- Neon DB (PostgreSQL)
 - Upstash Redis (job queue)
 - Cloudinary (CDN & storage)
 
