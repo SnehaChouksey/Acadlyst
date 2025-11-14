@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "prisma generate",
     "dev": "node --watch index.js",
     "dev:worker": "node --watch worker.js"
   },

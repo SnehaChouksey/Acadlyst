@@ -75,7 +75,7 @@ export default function TestimonialsAndFooter() {
               What Students Say About Acadlyst
             </h3>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Real experiences from learners using AI to supercharge their studies
+              Real experiences from learners using Acadlyst to supercharge their studies
             </p>
           </div>
 

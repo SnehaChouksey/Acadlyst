@@ -13,17 +13,17 @@ import type { StaticImageData } from 'next/image';
 const features = [
   {
     title: 'Smart Q&A',
-    description: 'Ask anything about your notes and get instant, AI-powered explanations.',
+    description: 'Ask anything about your PDF notes and get instant, AI-powered explanations.',
     icon: smartQaIcon,
   },
   {
     title: 'AI Summarizer',
-    description: 'Turn lengthy lectures and PDFs into concise, actionable summaries.',
+    description: 'Turn lengthy Youtube lectures and PDFs into concise, actionable summaries.',
     icon: aiSummarizerIcon,
   },
   {
     title: 'Quiz Generator',
-    description: 'Create quizzes from text, PDFs, or YouTube videos to test your knowledge.',
+    description: 'Create quizzes from text, PDFs, or YouTube video lectures to test your knowledge.',
     icon: quizGeneratorIcon,
   },
 ];
@@ -52,7 +52,7 @@ const FeatureSection = () => {
             <div className="h-1 w-52 bg-linear-to-r from-[#E23B6D] to-[#FF7CA3] rounded-full" />
           </div>
             <p className="mt-3 text-base md:text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
-            Acadlyst combines smart summarization, Q&A, and adaptive quizzes — all powered by GenAI.
+            Acadlyst combines smart summarization, PDF based chats, and adaptive quizzes — all powered by GenAI.
           </p>
         </motion.div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8 pt-5">
