@@ -10,6 +10,8 @@ import { useAuth } from "@clerk/nextjs";
 import Sidebar from "@/components/sidebar";
 import { FeatureNavbar } from "@/components/ui/featureNavbar";
 
+
+
 interface Doc {
   pageContent?: string;
   metadata?: {
@@ -108,6 +110,7 @@ export default function QA() {
 
   return (
     <>
+    
       <FeatureNavbar/>
       <div className="flex h-screen bg-background">
         <Sidebar />

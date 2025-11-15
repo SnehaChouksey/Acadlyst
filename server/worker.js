@@ -37,7 +37,7 @@ async function downloadPDFFromURL(url) {
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Split text into chunks
-async function getTextChunks(text, chunkSize = 5000, overlap = 500) {
+async function getTextChunks(text, chunkSize = 3000, overlap = 500) {
   const chunks = [];
   for (let i = 0; i < text.length; i += chunkSize - overlap) {
     chunks.push(text.slice(i, i + chunkSize));
@@ -66,6 +66,15 @@ function parseJSONResponse(response) {
 
   return jsonString;
 }
+function withTimeout(promise, ms) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Summary generation timed out")), ms)
+    )
+  ]);
+}
+
 
 const worker = new Worker(
   "file-upload-queue",
@@ -140,20 +149,27 @@ Respond in this exact JSON format ONLY:
           }
         }
         // Large input: chunk and aggregate
+
+
         else {
           console.log("Large input - Using chunked summarization...");
 
-          const chunks = await getTextChunks(sourceText, 5000, 500);
+          const chunks = await getTextChunks(sourceText, 3000, 500);
           console.log(`Split into ${chunks.length} chunks`);
+
+          const MAX_CHUNKS = 10;
 
           let chunkSummaries = [];
           
-          for (let i = 0; i < chunks.length; i++) {
+          for (let i = 0; i < Math.min(chunks.length, MAX_CHUNKS); i++) {
+            if (i >= MAX_CHUNKS) break;
             try {
-              const chunkResponse = await llm.invoke([
+              const chunkResponse = await withTimeout(
+                 llm.invoke([
                 ["system", "Summarize this section briefly in 2-3 sentences."],
                 ["human", chunks[i]]
-              ]);
+              ]),40000
+            );
 
               const summaryText = typeof chunkResponse === "string" 
                 ? chunkResponse 
@@ -172,7 +188,8 @@ Respond in this exact JSON format ONLY:
             }
           }
 
-          const allSummaries = chunkSummaries.join("\n\n");
+          const allSummaries = chunkSummaries.slice(0, MAX_CHUNKS).join("\n\n");
+
 
           const aggregatePrompt = `Based on these section summaries, create:
 1. A comprehensive overall summary (3-5 sentences)
@@ -188,10 +205,12 @@ Respond in this exact JSON format ONLY:
 }`;
 
           try {
-            const finalResponse = await llm.invoke([
+            const finalResponse = await withTimeout(
+              llm.invoke([
               ["system", "You are a professional summarizer. Always respond with ONLY valid JSON."],
               ["human", aggregatePrompt]
-            ]);
+            ]),40000
+          );
 
             const jsonString = parseJSONResponse(finalResponse);
             console.log("Parsing aggregated response...");
