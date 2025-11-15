@@ -1,24 +1,17 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import FileUploadComponent from '@/components/file-upload';
 import QuizDisplay from '@/components/quiz/quiz-display';
 import { useAuth } from "@clerk/nextjs";
 import UpgradeModal from "@/components/upgrade-modal";
 
-
-
 interface Question {
   id: number;
   question: string;
-  options: {
-    A: string;
-    B: string;
-    C: string;
-    D: string;
-  };
+  options: { A: string; B: string; C: string; D: string };
   correct_answer: string;
   explanation: string;
 }
@@ -45,24 +38,18 @@ export default function PdfQuizTab() {
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz/pdf`, {
         method: 'POST',
-        headers: {
-        'x-clerk-id': userId || '',
-        },
+        headers: { 'x-clerk-id': userId || '' },
         body: formData,
       });
 
       if (res.status === 403) {
-        // Out of credits
         setShowUpgrade(true);
         return;
       }
 
       const uploadResponse = await res.json();
-      
-      if (uploadResponse.jobId) {
-        pollJobStatus(uploadResponse.jobId);
-      }
 
+      if (uploadResponse.jobId) pollJobStatus(uploadResponse.jobId);
     } catch (error) {
       console.error('Error:', error);
       alert('Error generating quiz. Please try again.');
@@ -76,7 +63,7 @@ export default function PdfQuizTab() {
 
     const interval = setInterval(async () => {
       attempts++;
-      
+
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz/status/${jobId}`);
         const data = await res.json();
@@ -86,7 +73,7 @@ export default function PdfQuizTab() {
           setQuiz({
             questions: data.questions,
             fileName: data.fileName,
-            totalQuestions: data.totalQuestions
+            totalQuestions: data.totalQuestions,
           });
           setLoading(false);
         } else if (data.status === 'failed' || attempts >= maxAttempts) {
@@ -102,8 +89,8 @@ export default function PdfQuizTab() {
 
   if (quiz) {
     return (
-      <QuizDisplay 
-        quiz={quiz} 
+      <QuizDisplay
+        quiz={quiz}
         onRestart={() => setQuiz(null)}
         source="pdf"
       />
@@ -112,29 +99,46 @@ export default function PdfQuizTab() {
 
   return (
     <>
-    
-    <Card className="border border-accent/50 bg-card shadow-2xl">
-      <CardContent className="p-8">
-        {!loading && (
-          <div className="flex flex-col items-center justify-center  rounded-xl p-12 bg-card">
-            <p className='text-foreground , text-md text-xl mb-4'> Upload a PDF and test your knowledge with Acadlyst 🧠</p>
-            <FileUploadComponent onUploaded={handleFileUpload} />
-          </div>
-        )}
+      <Card className="border border-accent/50 bg-card shadow-2xl w-full">
 
-        {loading && (
-          <div className="space-y-6">
-            <div>
-              <h3 className="font-semibold text-lg mb-3 text-slate-300">Generating Quiz</h3>
-              <Skeleton className="h-40 w-full bg-accent/30" />
+        {/* Responsive padding: small on mobile, large on desktop */}
+        <CardContent className="p-4 sm:p-6 md:p-8">
+
+          {/* Upload block */}
+          {!loading && (
+            <div className="flex flex-col items-center text-center rounded-xl p-6 sm:p-10 md:p-12 bg-card space-y-4">
+
+              <p className="text-foreground text-lg sm:text-xl font-medium">
+                Upload a PDF and test your knowledge with Acadlyst 🧠
+              </p>
+
+              <div className="w-full max-w-sm mx-auto">
+                <FileUploadComponent onUploaded={handleFileUpload} />
+              </div>
             </div>
-            <p className="text-center text-muted-foreground text-sm">Analyzing document and generating quiz questions...</p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-    <UpgradeModal 
-        open={showUpgrade} 
+          )}
+
+          {/* Loading block */}
+          {loading && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="font-semibold text-lg sm:text-xl mb-3 text-slate-300">
+                  Generating Quiz
+                </h3>
+
+                <Skeleton className="h-32 sm:h-40 w-full bg-accent/30" />
+              </div>
+
+              <p className="text-center text-muted-foreground text-sm sm:text-base">
+                Analyzing document and generating quiz questions...
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <UpgradeModal
+        open={showUpgrade}
         onClose={() => setShowUpgrade(false)}
         feature="summarizer"
       />

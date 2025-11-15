@@ -3,18 +3,20 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RotateCcw, ChevronLeft, ChevronRight, CheckCircle, XCircle, Award, TrendingUp } from 'lucide-react';
-import { Progress } from "@/components/ui/progress"
+import {
+  RotateCcw,
+  ChevronLeft,
+  ChevronRight,
+  CheckCircle,
+  XCircle,
+  TrendingUp
+} from 'lucide-react';
+import { Progress } from "@/components/ui/progress";
 
 interface Question {
   id: number;
   question: string;
-  options: {
-    A: string;
-    B: string;
-    C: string;
-    D: string;
-  };
+  options: { A: string; B: string; C: string; D: string };
   correct_answer: string;
   explanation: string;
 }
@@ -29,7 +31,9 @@ interface QuizDisplayProps {
   source: 'text' | 'pdf' | 'youtube';
 }
 
-export default function QuizDisplay({ quiz, onRestart, source }: QuizDisplayProps) {
+// ---------------- MAIN COMPONENT ---------------- //
+
+export default function QuizDisplay({ quiz, onRestart }: QuizDisplayProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<{ [key: number]: string }>({});
   const [showResults, setShowResults] = useState(false);
@@ -40,15 +44,13 @@ export default function QuizDisplay({ quiz, onRestart, source }: QuizDisplayProp
   const userAnswer = userAnswers[currentQuestionIndex];
   const isAnswered = userAnswer !== undefined;
   const isCorrect = userAnswer === currentQuestion.correct_answer;
+
   const answeredCount = Object.keys(userAnswers).length;
   const totalQuestions = quiz.totalQuestions || quiz.questions.length;
 
   const handleAnswerSelect = (answer: string) => {
-    if (!showResults && !isAnswered) {
-      setUserAnswers({
-        ...userAnswers,
-        [currentQuestionIndex]: answer
-      });
+    if (!isAnswered) {
+      setUserAnswers({ ...userAnswers, [currentQuestionIndex]: answer });
       setShowFeedback(true);
     }
   };
@@ -68,17 +70,15 @@ export default function QuizDisplay({ quiz, onRestart, source }: QuizDisplayProp
   };
 
   const handleSubmitQuiz = () => {
-    let correctCount = 0;
-    quiz.questions.forEach((q, index) => {
-      if (userAnswers[index] === q.correct_answer) {
-        correctCount++;
-      }
-    });
+    const correctCount = quiz.questions.filter(
+      (q, i) => userAnswers[i] === q.correct_answer
+    ).length;
+
     setScore(correctCount);
     setShowResults(true);
   };
 
-  const handleRestart = () => {
+  const handleRestartAll = () => {
     setUserAnswers({});
     setShowResults(false);
     setCurrentQuestionIndex(0);
@@ -88,162 +88,142 @@ export default function QuizDisplay({ quiz, onRestart, source }: QuizDisplayProp
   };
 
   if (showResults) {
-    return <QuizResultsView quiz={quiz} score={score} userAnswers={userAnswers} onRestart={handleRestart} />;
+    return (
+      <QuizResultsView
+        quiz={quiz}
+        score={score}
+        userAnswers={userAnswers}
+        onRestart={handleRestartAll}
+      />
+    );
   }
 
-  const getOptionColor = (optionKey: string) => {
-    if (!isAnswered) {
-      return 'border-slate-600 bg-slate-700/50 hover:border-slate-500 hover:bg-slate-700';
-    }
+  const getOptionColor = (key: string) => {
+    if (!isAnswered) return 'border-slate-600 bg-slate-700/50';
 
-    if (optionKey === currentQuestion.correct_answer) {
-      return 'border-green-500 bg-green-900/30';
-    }
-
-    if (optionKey === userAnswer && userAnswer !== currentQuestion.correct_answer) {
-      return 'border-red-500 bg-red-900/30';
-    }
+    if (key === currentQuestion.correct_answer) return 'border-green-500 bg-green-900/30';
+    if (key === userAnswer) return 'border-red-500 bg-red-900/30';
 
     return 'border-slate-600 bg-slate-700/50 opacity-50';
   };
 
-  const getProgressBarColor = () => {
-    const percent = (answeredCount / totalQuestions) * 100;
-    if (percent < 50) return 'bg-red-500';
-    if (percent < 80) return 'bg-yellow-500';
-    return 'bg-green-500';
-  };
-
   return (
-    <div className="space-y-6">
-      {/* Progress Section */}
-      <Card className="border border-card bg-card/50 shadow-lg">
-        <CardContent className="px-5">
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="text-sm font-semibold text-foreground">
-              Question {currentQuestionIndex + 1} of {totalQuestions}
-            </h3>
-            <span className="text-sm text-muted-foreground">
-              {answeredCount} answered
-            </span>
+    <div className="space-y-6 w-full">
+
+      {/* PROGRESS CARD */}
+      <Card className="border bg-card/50 shadow-lg w-full">
+        <CardContent className="px-4 sm:px-5 py-4">
+          <div className="flex justify-between text-sm mb-2">
+            <span>Question {currentQuestionIndex + 1} of {totalQuestions}</span>
+            <span>{answeredCount} answered</span>
           </div>
           <Progress
             value={(answeredCount / totalQuestions) * 100}
-            className={`h-2 ${getProgressBarColor()}`}
+            className="h-2"
           />
         </CardContent>
       </Card>
 
-      {/* Quiz Card */}
-      <Card className="border border-card bg-card/50 shadow-2xl max-h-88 overflow-y-auto">
-        <CardHeader className="pb-1">
-          <div className="space-y-2">
+      {/* QUESTION CARD */}
+      <Card className="border bg-card/50 shadow-2xl w-full max-h-[85vh] sm:max-h-[88vh] overflow-y-auto">
+        <CardHeader className="pb-3 px-4 sm:px-6">
+          <div className="flex flex-col gap-1">
             <div className="flex items-start gap-2">
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-accent/10 border border-bg-accent">
+              <div className="w-8 h-8 flex items-center justify-center rounded-full bg-accent/10 border">
                 <span className="text-xs font-bold text-pink-700">{currentQuestionIndex + 1}</span>
               </div>
-              <CardTitle className="text-xl text-foreground/80">{currentQuestion.question}</CardTitle>
+              <CardTitle className="text-lg sm:text-xl">{currentQuestion.question}</CardTitle>
             </div>
-            <p className="text-muted-foreground text-sm ml-10">{quiz.fileName || 'Quiz'}</p>
+            <p className="text-muted-foreground text-xs sm:text-sm ml-10">
+              {quiz.fileName || 'Quiz'}
+            </p>
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-6">
-          {/* Options Grid */}
-          <div className="grid grid-cols-1 gap-3">
-            {Object.entries(currentQuestion.options).map(([key, value]) => {
-              const isSelected = userAnswer === key;
-              const isCorrectAnswer = key === currentQuestion.correct_answer;
-              const shouldShowCorrect = isAnswered && isCorrectAnswer;
-              const shouldShowWrong = isAnswered && isSelected && !isCorrectAnswer;
+        <CardContent className="px-4 sm:px-6 space-y-6">
 
-              return (
-                <button
-                  key={key}
-                  onClick={() => handleAnswerSelect(key)}
-                  disabled={isAnswered}
-                  className={`text-left p-4 rounded-lg border-2 transition-all transform hover:scale-102 ${getOptionColor(key)} ${
-                    isAnswered ? 'cursor-not-allowed' : 'cursor-pointer'
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <div
-                      className={`flex items-center justify-center w-8 h-8 rounded-full border-2 shrink-0 ${
-                        shouldShowCorrect
-                          ? 'bg-green-500/20 border-green-600'
-                          : shouldShowWrong
-                          ? 'bg-red-500/20 border-red-600'
-                          : 'border-foreground'
-                      }`}
-                    >
-                      {shouldShowCorrect && <CheckCircle className="w-5 h-5 text-green-400" />}
-                      {shouldShowWrong && <XCircle className="w-5 h-5 text-red-600" />}
-                      {!shouldShowCorrect && !shouldShowWrong && (
-                        <span className="text-sm font-semibold text-slate-400">{key}</span>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-semibold text-foreground">{value}</div>
-                    </div>
+          {/* OPTIONS */}
+          <div className="grid grid-cols-1 gap-3">
+            {Object.entries(currentQuestion.options).map(([key, value]) => (
+              <button
+                key={key}
+                onClick={() => handleAnswerSelect(key)}
+                disabled={isAnswered}
+                className={`text-left p-3 sm:p-4 rounded-lg border-2 transition-all ${getOptionColor(key)} 
+                  ${isAnswered ? 'cursor-not-allowed' : 'cursor-pointer'}
+                `}
+              >
+                <div className="flex gap-3 items-start">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full border-2">
+                    {userAnswer === key && key === currentQuestion.correct_answer && (
+                      <CheckCircle className="w-5 h-5 text-green-500" />
+                    )}
+                    {userAnswer === key && key !== currentQuestion.correct_answer && (
+                      <XCircle className="w-5 h-5 text-red-500" />
+                    )}
+                    {!isAnswered && (
+                      <span className="text-xs font-semibold text-slate-300">
+                        {key}
+                      </span>
+                    )}
                   </div>
-                </button>
-              );
-            })}
+                  <p className="text-sm sm:text-base">{value}</p>
+                </div>
+              </button>
+            ))}
           </div>
 
-          {/* Feedback Section */}
+          {/* FEEDBACK */}
           {showFeedback && isAnswered && (
             <div
-              className={`p-4 rounded-lg border-l-4 ${
+              className={`p-3 sm:p-4 rounded-lg border-l-4 ${
                 isCorrect
                   ? 'bg-green-900/20 border-green-600'
                   : 'bg-red-900/20 border-red-700'
               }`}
             >
-              <div className="flex items-start gap-3">
-                {isCorrect ? (
-                  <CheckCircle className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
-                ) : (
-                  <XCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-                )}
-                <div>
-                  <p className={`font-semibold ${isCorrect ? 'text-green-400' : 'text-red-600'}`}>
-                    {isCorrect ? 'Correct!' : 'Incorrect'}
-                  </p>
-                  <p className="text-muted-foreground text-sm mt-1">{currentQuestion.explanation}</p>
-                </div>
-              </div>
+              <p className={`font-semibold ${isCorrect ? 'text-green-400' : 'text-red-500'}`}>
+                {isCorrect ? 'Correct!' : 'Incorrect'}
+              </p>
+              <p className="text-xs sm:text-sm mt-1 text-muted-foreground">
+                {currentQuestion.explanation}
+              </p>
             </div>
           )}
 
-          {/* Navigation Buttons */}
-          <div className="flex gap-3 pt-4">
+          {/* NAVIGATION BUTTONS */}
+          <div className="flex flex-col sm:flex-row gap-3 pt-4">
+
             <Button
               onClick={handlePrevious}
               disabled={currentQuestionIndex === 0}
               variant="outline"
-              className="flex-1 bg-card border-accent/40 hover:bg-accent/80 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full sm:flex-1"
             >
-              <ChevronLeft className="h-4 w-4 mr-2" /> Previous
+              <ChevronLeft className="w-4 h-4 mr-2" />
+              Previous
             </Button>
 
             {currentQuestionIndex === quiz.questions.length - 1 ? (
               <Button
                 onClick={handleSubmitQuiz}
                 disabled={answeredCount !== totalQuestions}
-                className="flex-1 bg-linear-to-br from-pink-600 to-orange-700 hover:from-pink-700 hover:to-orange-800 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                className="w-full sm:flex-1 bg-linear-to-br from-pink-600 to-orange-700"
               >
-                <TrendingUp className="h-4 w-4 mr-2" /> Submit Quiz
+                <TrendingUp className="w-4 h-4 mr-2" />
+                Submit Quiz
               </Button>
             ) : (
               <Button
                 onClick={handleNext}
                 disabled={!isAnswered}
-                className="flex-1 bg-linear-to-r from-pink-600 to-pink-700 hover:from-pink-700 hover:to-pink-800 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                className="w-full sm:flex-1 bg-linear-to-r from-pink-600 to-pink-700"
               >
-                Next <ChevronRight className="h-4 w-4 ml-2" />
+                Next
+                <ChevronRight className="w-4 h-4 ml-2" />
               </Button>
             )}
+
           </div>
         </CardContent>
       </Card>
@@ -251,146 +231,100 @@ export default function QuizDisplay({ quiz, onRestart, source }: QuizDisplayProp
   );
 }
 
-// Results Component
+// ---------------- RESULTS VIEW ---------------- //
+
 function QuizResultsView({ quiz, score, userAnswers, onRestart }: any) {
   const totalQuestions = quiz.totalQuestions || quiz.questions.length;
   const percentage = Math.round((score / totalQuestions) * 100);
-  const wrongAnswers = totalQuestions - score;
 
-  const getResultGrade = () => {
-    if (percentage === 100) return { label: 'Perfect!', color: 'text-green-400', icon: '🌟' };
-    if (percentage >= 80) return { label: 'Excellent!', color: 'text-green-400', icon: '🎉' };
-    if (percentage >= 60) return { label: 'Good!', color: 'text-yellow-400', icon: '👍' };
-    if (percentage >= 40) return { label: 'Fair', color: 'text-orange-400', icon: '📚' };
-    return { label: 'Keep Learning', color: 'text-red-400', icon: '💪' };
-  };
-
-  const result = getResultGrade();
+  const wrong = totalQuestions - score;
 
   return (
-    <div className="space-y-6">
-      {/* Score Card */}
-      <Card className="border border-card bg-card/50 shadow-2xl overflow-hidden">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-8">
+    <div className="space-y-6 w-full">
+
+      {/* SCORE CARD */}
+      <Card className="border bg-card/50 shadow-2xl w-full">
+        <CardContent className="p-4 sm:p-6">
+
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
             <div>
-              <p className="text-muted-foreground text-sm font-semibold">QUIZ RESULTS</p>
-              <h2 className="text-3xl font-bold text-foreground mt-1">{quiz.fileName || 'Quiz'}</h2>
+              <p className="text-xs text-muted-foreground">QUIZ RESULTS</p>
+              <h2 className="text-2xl sm:text-3xl font-bold mt-1">{quiz.fileName || 'Quiz'}</h2>
             </div>
-            <div className="text-5xl">{result.icon}</div>
+            <div className="text-5xl mt-3 sm:mt-0">🎯</div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 mb-8">
-            {/* Score */}
-            <div className="bg-card border border-accent/80 rounded-lg p-4">
-              <p className="text-foreground-400 text-xs font-semibold uppercase">Score</p>
-              <p className="text-3xl font-bold text-foreground-300 mt-1">
-                {score}/{totalQuestions}
-              </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <div className="bg-card border p-4 rounded-lg">
+              <p className="text-xs text-muted-foreground">Score</p>
+              <p className="text-2xl sm:text-3xl font-bold">{score}/{totalQuestions}</p>
             </div>
-
-            {/* Percentage */}
-            <div className="bg-card border border-accent/80 rounded-lg p-4">
-              <p className="text-foreground text-xs font-semibold uppercase">Percentage</p>
-              <p className="text-3xl font-bold text-foreground mt-1">{percentage}%</p>
+            <div className="bg-card border p-4 rounded-lg">
+              <p className="text-xs text-muted-foreground">Percentage</p>
+              <p className="text-2xl sm:text-3xl font-bold">{percentage}%</p>
             </div>
-
-            {/* Grade */}
-            <div className="bg-card border border-accent/90 rounded-lg p-4">
-              <p className="text-foreground text-xs font-semibold uppercase">Grade</p>
-              <p className={`text-2xl font-bold ${result.color} mt-1`}>{result.label}</p>
+            <div className="bg-card border p-4 rounded-lg">
+              <p className="text-xs text-muted-foreground">Correct</p>
+              <p className="text-2xl sm:text-3xl font-bold text-green-400">{score}</p>
             </div>
           </div>
 
-          {/* Progress Bar */}
-          <div className="mb-6">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-foreground">Performance</span>
-              <span className="text-sm font-semibold text-foreground/40">{percentage}%</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="bg-green-900/20 border border-green-600 rounded-lg p-4">
+              <p className="text-green-400 text-sm font-semibold">Correct</p>
+              <p className="text-2xl font-bold">{score}</p>
             </div>
-            <div className="w-full bg-card rounded-full h-3 overflow-hidden">
-              <div
-                className={`h-full bg-linear-to-r from-pink-600 to-orange-500 transition-all duration-500`}
-                data-percentage={percentage}
-              />
+            <div className="bg-red-900/20 border border-red-700 rounded-lg p-4">
+              <p className="text-red-400 text-sm font-semibold">Wrong</p>
+              <p className="text-2xl font-bold">{wrong}</p>
             </div>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center gap-3 bg-green-900/20 border border-green-700/30 rounded-lg p-3">
-              <CheckCircle className="w-6 h-6 text-green-500 shrink-0" />
-              <div>
-                <p className="text-green-500 text-xs font-semibold">Correct</p>
-                <p className="text-2xl font-bold text-green-400">{score}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 bg-red-900/20 border border-red-700/30 rounded-lg p-3">
-              <XCircle className="w-6 h-6 text-red-500 shrink-0" />
-              <div>
-                <p className="text-red-400 text-xs font-semibold">Wrong</p>
-                <p className="text-2xl font-bold text-red-400">{wrongAnswers}</p>
-              </div>
-            </div>
-          </div>
         </CardContent>
       </Card>
 
-      {/* Review Section */}
-      <Card className="border border-card bg-card/30 shadow-lg">
+      {/* REVIEW */}
+      <Card className="border bg-card/40 shadow-lg w-full">
         <CardHeader>
-          <CardTitle className="text-lg">Answer Review</CardTitle>
+          <CardTitle>Answer Review</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4 max-h-96 overflow-y-auto">
-          {quiz.questions.map((q: Question, index: number) => {
-            const userAns = userAnswers[index];
-            const isRight = userAns === q.correct_answer;
+
+        <CardContent className="space-y-4 max-h-[70vh] overflow-y-auto px-4 sm:px-6">
+          {quiz.questions.map((q: Question, i: number) => {
+            const userAns = userAnswers[i];
+            const right = userAns === q.correct_answer;
 
             return (
               <div
-                key={q.id}
-                className={`p-4 rounded-lg border-l-4 ${
-                  isRight
+                key={i}
+                className={`p-3 sm:p-4 rounded-lg border-l-4 ${
+                  right
                     ? 'bg-green-900/10 border-green-600'
                     : 'bg-red-900/10 border-red-600'
                 }`}
               >
-                <div className="flex items-start gap-3">
-                  {isRight ? (
-                    <CheckCircle className="w-5 h-5 text-green-400 shrink-0 mt-0.5" />
-                  ) : (
-                    <XCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-foreground/70 text-sm">Question {index + 1}: {q.question}</p>
-                    <div className="mt-2 space-y-1 text-xs">
-                      <p className="text-foreground/70">
-                        <span className="text-muted-foreground">Your answer:</span> {userAns ? `${userAns} - ${q.options[userAns as keyof typeof q.options]}` : 'Not answered'}
-                      </p>
-                      {!isRight && (
-                        <p className="text-green-500">
-                          <span className="text-foreground/70">Correct:</span> {q.correct_answer} - {q.options[q.correct_answer as keyof typeof q.options]}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                <p className="font-semibold text-sm">Q{i + 1}: {q.question}</p>
+                <p className="text-xs mt-1">
+                  Your answer: {userAns ? `${userAns} - ${q.options[userAns as keyof typeof q.options]}` : 'Not answered'}
+                </p>
+                {!right && (
+                  <p className="text-xs mt-1 text-green-400">
+                    Correct: {q.correct_answer} - {q.options[q.correct_answer as keyof typeof q.options]}
+                  </p>
+                )}
               </div>
             );
           })}
         </CardContent>
       </Card>
 
-      {/* Action Buttons */}
-      <div className="flex gap-3">
-        <Button
-          onClick={onRestart}
-          className="flex-1 bg-linear-to-r from-pink-600 to-orange-700 hover:from-pink-700 hover:to-orange-800 h-12 font-semibold text-white"
-        >
-          <RotateCcw className="h-4 w-4 mr-2" /> Take Quiz Again
-        </Button>
-      </div>
+      {/* RESTART BUTTON */}
+      <Button
+        onClick={onRestart}
+        className="w-full bg-linear-to-r from-pink-600 to-orange-700 h-12 font-semibold text-white"
+      >
+        <RotateCcw className="mr-2 w-4 h-4" /> Restart Quiz
+      </Button>
     </div>
   );
 }

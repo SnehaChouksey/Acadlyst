@@ -9,7 +9,6 @@ import QuizDisplay from './quiz-display';
 import { useAuth } from "@clerk/nextjs";
 import UpgradeModal from "@/components/upgrade-modal";
 
-
 interface Question {
   id: number;
   question: string;
@@ -33,61 +32,59 @@ export default function YoutubeQuizTab() {
   const [showUpgrade, setShowUpgrade] = useState(false);
 
   const handleGenerateQuiz = async () => {
-  if (!youtubeUrl.trim()) {
-    setError('Please paste a YouTube URL');
-    return;
-  }
+    if (!youtubeUrl.trim()) {
+      setError('Please paste a YouTube URL');
+      return;
+    }
 
-  setLoading(true);
-  setQuiz(null);
-  setError('');
+    setLoading(true);
+    setQuiz(null);
+    setError('');
 
-  // Wrapper function for retries
-  async function tryGenerateQuiz(retries = 3, delay = 1600) {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz/youtube`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-clerk-id': userId || '',
-        },
-        body: JSON.stringify({ url: youtubeUrl })
-      });
+    async function tryGenerateQuiz(retries = 3, delay = 1600) {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz/youtube`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-clerk-id': userId || '',
+          },
+          body: JSON.stringify({ url: youtubeUrl })
+        });
 
-      if (res.status === 403) {
-        setShowUpgrade(true);
-        setLoading(false);
-        return;
-      }
+        if (res.status === 403) {
+          setShowUpgrade(true);
+          setLoading(false);
+          return;
+        }
 
-      const data = await res.json();
+        const data = await res.json();
 
-      if (!res.ok) {
+        if (!res.ok) {
+          if (retries > 0) {
+            setTimeout(() => tryGenerateQuiz(retries - 1, delay), delay);
+          } else {
+            setError(data.error || 'Error generating quiz');
+            setLoading(false);
+          }
+          return;
+        }
+
+        if (data.jobId) {
+          pollJobStatus(data.jobId);
+        }
+      } catch (error) {
         if (retries > 0) {
           setTimeout(() => tryGenerateQuiz(retries - 1, delay), delay);
         } else {
-          setError(data.error || 'Error generating quiz');
+          setError('Error generating quiz. Please try again.');
           setLoading(false);
         }
-        return;
-      }
-
-      if (data.jobId) {
-        pollJobStatus(data.jobId);
-      }
-    } catch (error) {
-      if (retries > 0) {
-        setTimeout(() => tryGenerateQuiz(retries - 1, delay), delay);
-      } else {
-        setError('Error generating quiz. Please try again.');
-        setLoading(false);
       }
     }
-  }
 
-  tryGenerateQuiz();
-};
-
+    tryGenerateQuiz();
+  };
 
   const pollJobStatus = async (jobId: string) => {
     const maxAttempts = 120;
@@ -134,50 +131,62 @@ export default function YoutubeQuizTab() {
 
   return (
     <>
-    <Card className="border border-accent/30 bg-card shadow-2xl max-h-100">
-      <CardContent className="p-20 space-y-4">
-        
-        <div className="flex items-center gap-2 flex-col mb-4">
-          <Youtube className="glex-col flex h-15 w-15 text-red-500" />
-          <label className="text-2xl font-semibold text-slate-300">YouTube Video URL</label>
-        </div>
+      <Card className="border border-accent/30 bg-card shadow-2xl max-h-100 w-full">
+        {/* Responsive padding */}
+        <CardContent className="p-6 sm:p-10 md:p-20 space-y-4">
 
-        <input
-          type="text"
-          value={youtubeUrl}
-          onChange={(e) => {
-            setYoutubeUrl(e.target.value);
-            setError('');
-          }}
-          placeholder="Paste YouTube link (e.g., https://www.youtube.com/watch?v=..."
-          className="w-full p-3 bg-background text-slate-100 border border-foreground/20 hover:border-white rounded-lg focus:outline-none focus:border-blue-500"
-        />
-
-        {error && (
-          <div className="p-3 bg-red-900/20 border border-red-700/30 rounded-lg text-red-400 text-sm">
-            {error}
+          {/* Header section */}
+          <div className="flex flex-col items-center gap-2 mb-4 text-center">
+            <Youtube className="h-10 w-10 sm:h-12 sm:w-12 text-red-500" />
+            <label className="text-xl sm:text-2xl font-semibold text-slate-300">
+              YouTube Video URL
+            </label>
           </div>
-        )}
 
-        {loading && (
-          <div className="space-y-4">
-            <Skeleton className="max-h-70 w-full bg-accent/20" />
-            <p className="text-center text-muted-foreground text-sm">Fetching transcript and generating quiz...</p>
-          </div>
-        )}
+          {/* Input */}
+          <input
+            type="text"
+            value={youtubeUrl}
+            onChange={(e) => {
+              setYoutubeUrl(e.target.value);
+              setError('');
+            }}
+            placeholder="Paste YouTube link (e.g., https://www.youtube.com/watch?v=...)"
+            className="w-full p-3 bg-background text-slate-100 border border-foreground/20 hover:border-white rounded-lg focus:outline-none focus:border-blue-500 text-sm sm:text-base"
+          />
 
-        {!loading && (
-          <Button
-            onClick={handleGenerateQuiz}
-            disabled={!youtubeUrl.trim() || loading}
-            className="w-full bg-pink-700 hover:bg-pink-900 h-12 text-foreground font-semibold"
-          >
-            Generate Quiz from Video
-          </Button>
-        )}
-      </CardContent>
-    </Card>
-    <UpgradeModal 
+          {/* Error message */}
+          {error && (
+            <div className="p-3 bg-red-900/20 border border-red-700/30 rounded-lg text-red-400 text-sm">
+              {error}
+            </div>
+          )}
+
+          {/* Loading skeleton */}
+          {loading && (
+            <div className="space-y-4">
+              <Skeleton className="h-24 w-full bg-accent/20" />
+              <p className="text-center text-muted-foreground text-sm">
+                Fetching transcript and generating quiz...
+              </p>
+            </div>
+          )}
+
+          {/* Button */}
+          {!loading && (
+            <Button
+              onClick={handleGenerateQuiz}
+              disabled={!youtubeUrl.trim() || loading}
+              className="w-full bg-pink-700 hover:bg-pink-900 h-12 text-foreground font-semibold text-sm sm:text-base"
+            >
+              Generate Quiz from Video
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Upgrade modal */}
+      <UpgradeModal 
         open={showUpgrade} 
         onClose={() => setShowUpgrade(false)}
         feature="summarizer"

@@ -8,17 +8,10 @@ import QuizDisplay from '@/components/quiz/quiz-display';
 import { useAuth } from "@clerk/nextjs";
 import UpgradeModal from "@/components/upgrade-modal";
 
-
-
 interface Question {
   id: number;
   question: string;
-  options: {
-    A: string;
-    B: string;
-    C: string;
-    D: string;
-  };
+  options: { A: string; B: string; C: string; D: string };
   correct_answer: string;
   explanation: string;
 }
@@ -48,16 +41,16 @@ export default function TextQuizTab() {
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz/text`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json',
-                   'x-clerk-id': userId || '',
-                 },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-clerk-id': userId || '',
+        },
         body: JSON.stringify({ text: textInput })
       });
 
       const data = await res.json();
 
       if (res.status === 403) {
-        // Out of credits
         setShowUpgrade(true);
         return;
       }
@@ -79,7 +72,7 @@ export default function TextQuizTab() {
 
     const interval = setInterval(async () => {
       attempts++;
-      
+
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz/status/${jobId}`);
         const data = await res.json();
@@ -105,8 +98,8 @@ export default function TextQuizTab() {
 
   if (quiz) {
     return (
-      <QuizDisplay 
-        quiz={quiz} 
+      <QuizDisplay
+        quiz={quiz}
         onRestart={() => {
           setQuiz(null);
           setTextInput('');
@@ -118,35 +111,43 @@ export default function TextQuizTab() {
 
   return (
     <>
-    <Card className="border border-accent/40 max-h-100 shadow-2xl">
-      <CardContent className="px-6 space-y-4">
-        <textarea
-          value={textInput}
-          onChange={(e) => setTextInput(e.target.value)}
-          placeholder="Paste your study notes, lecture content, or any text you want to create a quiz from..."
-          className="w-full h-64 p-4 bg-background text-foreground border border-foreground/20 rounded-lg resize-none focus:outline-none focus:border-blue-500"
-        />
+      <Card className="border border-accent/40 shadow-2xl w-full">
 
-        {loading && (
-          <div className="space-y-4">
-            <Skeleton className="h-20 w-full bg-accent/30" />
-            <p className="text-center text-slate-400 text-sm">Generating quiz questions...</p>
-          </div>
-        )}
+        {/* 📌 RESPONSIVE PADDING */}
+        <CardContent className="px-4 sm:px-6 py-6 space-y-4">
 
-        {!loading && (
-          <Button
-            onClick={handleGenerateQuiz}
-            disabled={!textInput.trim() || loading}
-            className="w-full bg-pink-700 hover:bg-pink-900 text-foreground h-12 "
-          >
-            Generate Quiz from Text
-          </Button>
-        )}
-      </CardContent>
-    </Card>
-    <UpgradeModal 
-        open={showUpgrade} 
+          {/* 📌 MOBILE-SAFE TEXTAREA SIZE */}
+          <textarea
+            value={textInput}
+            onChange={(e) => setTextInput(e.target.value)}
+            placeholder="Paste your study notes, lecture content, or any text you want to create a quiz from..."
+            className="w-full h-48 sm:h-64 p-4 bg-background text-foreground border border-foreground/20 rounded-lg resize-none focus:outline-none focus:border-blue-500"
+          />
+
+          {loading && (
+            <div className="space-y-4">
+              <Skeleton className="h-16 sm:h-20 w-full bg-accent/30" />
+              <p className="text-center text-slate-400 text-sm">
+                Generating quiz questions...
+              </p>
+            </div>
+          )}
+
+          {!loading && (
+            <Button
+              onClick={handleGenerateQuiz}
+              disabled={!textInput.trim() || loading}
+              className="w-full bg-pink-700 hover:bg-pink-900 text-foreground h-12 text-sm sm:text-base"
+            >
+              Generate Quiz from Text
+            </Button>
+          )}
+
+        </CardContent>
+      </Card>
+
+      <UpgradeModal
+        open={showUpgrade}
         onClose={() => setShowUpgrade(false)}
         feature="summarizer"
       />
