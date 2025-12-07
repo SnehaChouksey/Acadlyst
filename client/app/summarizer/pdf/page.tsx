@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import FileUploadComponent from '@/components/file-upload';
-import { Download, RefreshCcw, FileText, Copy, Check, Youtube } from 'lucide-react';
+import { Download, RefreshCcw, FileText, Copy, Check } from 'lucide-react';
+import { FaYoutube } from "react-icons/fa";
 import { useAuth } from "@clerk/nextjs";
 import UpgradeModal from "@/components/upgrade-modal";
 import Sidebar from '@/components/sidebar';
@@ -219,7 +220,7 @@ export default function SummarizerPage() {
               <TabsList className="w-full grid grid-cols-2 gap-3 mb-4 rounded-lg p-1 max-h-12">
                 <TabsTrigger value="pdf">Document / PDF</TabsTrigger>
                 <TabsTrigger value="video">
-                  <Youtube className="h-10 w-10" /> YouTube Video
+                  <FaYoutube className="h-10 w-10" /> YouTube Video
                 </TabsTrigger>
               </TabsList>
 
@@ -293,7 +294,7 @@ export default function SummarizerPage() {
                 {!youtubeummary && !loading && (
                   <div className="flex flex-col flex-1 justify-center items-center gap-5 px-4 md:px-40 py-18 border-2 border-accent rounded-2xl">
                     <div className="flex items-center gap-2 mb-1">
-                      <Youtube className="h-15 w-15 text-red-500" />
+                      <FaYoutube className="h-15 w-15 text-red-500" />
                       <label className="text-2xl font-bold text-slate-300">YouTube Video URL</label>
                     </div>
 

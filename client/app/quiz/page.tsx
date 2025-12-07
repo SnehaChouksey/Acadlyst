@@ -2,7 +2,8 @@
 
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BrainCircuit, FileText, Type, Youtube } from "lucide-react";
+import { Brain, FileText, Type } from "lucide-react";
+import { FaYoutube } from "react-icons/fa";
 import TextQuizTab from "@/components/quiz/text-quiz-tab";
 import PdfQuizTab from "@/components/quiz/pdf-quiz-tab";
 import YoutubeQuizTab from "@/components/quiz/youtube-quiz-tab";
@@ -25,7 +26,10 @@ export default function QuizGeneratorPage() {
       <div className="flex flex-col items-center min-h-screen px-4 py-5 bg-background mt-16 md:ml-60">
 
         <div className="w-full max-w-5xl mb-4">
+          <div className="flex items-center gap-3 text-primary mb-2">
+            <Brain className="h-10 w-10 text-pink-700" /> 
           <h1 className="text-4xl font-bold mb-1">AI Quiz Generator</h1>
+          </div>
           <p className="text-muted-foreground text-base">
             Test your knowledge with Acadlyst's AI-generated quizzes from your preferred source
           </p>
@@ -44,7 +48,7 @@ export default function QuizGeneratorPage() {
               </TabsTrigger>
 
               <TabsTrigger value="youtube">
-                <Youtube className="h-4 w-4" /> YouTube
+                <FaYoutube className="h-4 w-4" /> YouTube
               </TabsTrigger>
             </TabsList>
 

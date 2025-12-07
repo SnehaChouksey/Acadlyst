@@ -2,7 +2,8 @@
 import React, { useRef, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { motion, useMotionValue, animate as fmAnimate } from 'framer-motion';
-import { Youtube, FileText, Text, Bot, List, HelpCircle } from "lucide-react";
+import {  FileText, Text, Bot, List, HelpCircle } from "lucide-react";
+import { FaYoutube } from "react-icons/fa";
 
 const SVG_WIDTH = 1500;
 const SVG_HEIGHT = 600;
@@ -41,18 +42,18 @@ const DOTS = [
 const ICONS = [
   {
     x: 410, y: 120,
-    icon: <FileText color="#E23B6D" size={38} strokeWidth={2.0} />,
-    label: "PDF",
+    icon: <FaYoutube color="#E23B6D" size={38} strokeWidth={2.0} />,
+    label: "youtube video Input",
   },
   {
     x: 340, y: 300,
-    icon: <Youtube color="#E23B6D" size={38} strokeWidth={2.0} />,
-    label: "YouTube"
+    icon: <Text color="#E23B6D" size={38} strokeWidth={2.0} />,
+    label: "Text Input"
   },
   {
     x: 410, y: 470,
-    icon: <Text color="#E23B6D" size={38} strokeWidth={2.0} />,
-    label: "Text"
+    icon: <FileText color="#E23B6D" size={38} strokeWidth={2.0} />,
+    label: "PDF Input"
   },
   {
     x: 1090, y: 120,

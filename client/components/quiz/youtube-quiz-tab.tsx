@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Youtube } from 'lucide-react';
+import { FaYoutube } from "react-icons/fa";
 import QuizDisplay from './quiz-display';
 import { useAuth } from "@clerk/nextjs";
 import UpgradeModal from "@/components/upgrade-modal";
@@ -137,7 +137,7 @@ export default function YoutubeQuizTab() {
 
           {/* Header section */}
           <div className="flex flex-col items-center gap-2 mb-4 text-center">
-            <Youtube className="h-10 w-10 sm:h-12 sm:w-12 text-red-500" />
+            <FaYoutube className="h-10 w-10 sm:h-12 sm:w-12 text-red-500" />
             <label className="text-xl sm:text-2xl font-semibold text-slate-300">
               YouTube Video URL
             </label>
