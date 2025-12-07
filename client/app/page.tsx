@@ -6,6 +6,7 @@ import Workflow from "@/components/ui/workflow";
 import HeroSection from "./herosection/page";
 import FeatureSection from "@/components/FeatureSection";
 import TestimonialsAndFooter from "@/components/TestimonialsAndFooter";
+import PricingSection from "@/components/pricingSection"; 
 import { Header } from "@/components/header";
 
 
@@ -15,6 +16,7 @@ export default function Home() {
     <Header/>
     <HeroSection />
     <FeatureSection />
+    <PricingSection />
     <TestimonialsAndFooter /> 
 
     

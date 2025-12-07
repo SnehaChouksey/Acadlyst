@@ -71,7 +71,7 @@ export default function TestimonialsAndFooter() {
 
         <div className="container mx-auto max-w-7xl">
           <div className="text-center mb-6">
-            <h3 className="text-4xl md:text-4xl font-bold mb-6 bg-linear-to-r from-[#E23B6D] to-[#ff006f] bg-clip-text text-transparent">
+            <h3 className="text-4xl md:text-5xl font-bold mb-3 pb-2 bg-linear-to-r from-[#E23B6D] to-[#ff006f] bg-clip-text text-transparent">
               What Students Say About Acadlyst
             </h3>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
