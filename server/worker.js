@@ -104,7 +104,7 @@ const worker = new Worker(
 
         const textLength = sourceText.length;
         const llm = new ChatGoogleGenerativeAI({
-          model: "gemini-2.5-flash-lite",
+          model: "gemini-2.5-flash",
           maxRetries: 1,
           temperature: 0.3,
           apiKey: process.env.GOOGLE_API_KEY,
@@ -257,7 +257,7 @@ Respond in this exact JSON format ONLY:
           console.log("Text length:", textLength, "chars");
 
           const llm = new ChatGoogleGenerativeAI({
-            model: "gemini-2.0-flash-lite",
+            model: "gemini-2.5-flash",
             maxRetries: 1,
             temperature: 0.5,
             apiKey: process.env.GOOGLE_API_KEY,
