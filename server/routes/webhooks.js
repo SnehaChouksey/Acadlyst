@@ -27,10 +27,18 @@ router.post("/clerk", async (req, res) => {
       const { id, email_addresses, first_name, last_name, image_url } = evt.data;
 
       const email = email_addresses?.[0]?.email_address;
-      if (!email) {
-        console.error("❌ Webhook: No email address found for user", id);
-        return res.status(400).json({ error: "No email address in webhook data" });
+         if (!email) {
+        try {
+          const clerkUser = await clerkClient.users.getUser(id);
+          email =
+            clerkUser.emailAddresses?.[0]?.emailAddress ||
+            `${id}@placeholder.local`;
+        } catch (e) {
+          console.error("⚠️ Failed to fetch user from Clerk in webhook:", e.message);
+          email = `${id}@placeholder.local`;
+        }
       }
+
 
       await getOrCreateUser(
         id,
