@@ -29,22 +29,33 @@ export default function SummarizerPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const sourceParam = searchParams.get("source");
+  
+  const [isMounted, setIsMounted] = React.useState(false);
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const sourceParam = isMounted ? searchParams.get("source") : null;
   const initialTab =
   sourceParam === "video" || sourceParam === "pdf" ? sourceParam : "pdf";
 
   const [tab, setTab] = React.useState(initialTab);
-
+  
   React.useEffect(() => {
-  if (!sourceParam) return;
+    if (!isMounted) return;
+    if (!sourceParam) return;
 
-  if ((sourceParam === "pdf" || sourceParam === "video") && sourceParam !== tab) {
-    setTab(sourceParam);
-  }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [sourceParam]);
+    if (
+      (sourceParam === "pdf" || sourceParam === "video") &&
+      sourceParam !== tab
+    ) {
+      setTab(sourceParam);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sourceParam, isMounted]);
 
-  const handleTabChange = (value: string) => {
+    const handleTabChange = (value: string) => {
+    if (!isMounted) return;
     setTab(value);
     const params = new URLSearchParams(searchParams.toString());
     params.set("source", value);
