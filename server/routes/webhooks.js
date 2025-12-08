@@ -2,15 +2,15 @@ import "dotenv/config";
 import express from "express";
 import { Webhook } from "svix";
 import { getOrCreateUser } from "../services/userService.js";
-import { clerkClient } from '@clerk/clerk-sdk-node';
+import { clerkClient } from "@clerk/clerk-sdk-node";
 
 const router = express.Router();
 const webhookSecret = process.env.CLERK_WEBHOOK_SECRET;
 
-router.post("/clerk", express.raw({ type: "application/json" }), async (req, res) => {
+router.post("/clerk", async (req, res) => {
   try {
     const headers = req.headers;
-    const body = req.body;
+    const body = req.body; // raw Buffer because of express.raw()
 
     console.log("📥 Clerk webhook called!");
 
@@ -32,7 +32,6 @@ router.post("/clerk", express.raw({ type: "application/json" }), async (req, res
         return res.status(400).json({ error: "No email address in webhook data" });
       }
 
-      
       await getOrCreateUser(
         id,
         email,
@@ -40,12 +39,11 @@ router.post("/clerk", express.raw({ type: "application/json" }), async (req, res
         image_url
       );
 
-    
       try {
         await clerkClient.users.updateUserMetadata(id, {
           publicMetadata: {
-            plan: 'free_user'  
-          }
+            plan: "free_user",
+          },
         });
         console.log("✅ User webhook processed and plan set to 'free_user'");
       } catch (metadataError) {

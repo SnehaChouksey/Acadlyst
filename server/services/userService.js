@@ -10,7 +10,27 @@ export async function getOrCreateUser(clerkId, email, name, profileImage) {
       where: { clerkId },
     });
 
-    
+     if (!user) {
+      // Try to get real data from Clerk, but fall back to placeholders if needed
+      try {
+        const clerkUser = await clerkClient.users.getUser(clerkId);
+        const email = clerkUser.emailAddresses?.[0]?.emailAddress || `${clerkId}@placeholder.local`;
+        const name = `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim() || "User";
+        const imageUrl = clerkUser.imageUrl;
+
+        user = await getOrCreateUser(clerkId, email, name, imageUrl);
+        console.log("🆕 Created user on-demand via checkCredits:", user.email);
+      } catch (clerkErr) {
+        console.log("⚠️ Clerk fetch failed in checkCredits, using placeholder:", clerkErr.message);
+        user = await getOrCreateUser(
+          clerkId,
+          `${clerkId}@placeholder.local`,
+          "User",
+          null
+        );
+      }
+    }
+
     if (user) return user;
 
     if (email) {
