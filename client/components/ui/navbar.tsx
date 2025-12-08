@@ -93,7 +93,7 @@ export function NavigationMenuMain() {
             </NavigationMenuContent>
            </NavigationMenuItem>
           <NavigationMenuItem>
-           <Link href="/summarizer/pdf?source=pdf" onClick={handleProtectedClick}>
+           <Link href="/summarizer/pdf" onClick={handleProtectedClick}>
         <NavigationMenuTrigger>Summarizer</NavigationMenuTrigger>
   </Link>
   <NavigationMenuContent>
@@ -105,7 +105,7 @@ export function NavigationMenuMain() {
 
       <NavigationMenuLink asChild>
         <Link
-          href="/summarizer/pdf?source=pdf"
+          href="/summarizer/pdf"
           onClick={handleProtectedClick}
           className="block"
         >
@@ -119,7 +119,7 @@ export function NavigationMenuMain() {
 
       <NavigationMenuLink asChild>
         <Link
-          href="/summarizer/pdf?source=video"
+          href="/summarizer/pdf"
           onClick={handleProtectedClick}
           className="block"
         >
