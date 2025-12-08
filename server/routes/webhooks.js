@@ -26,7 +26,7 @@ router.post("/clerk", async (req, res) => {
     if (evt.type === "user.created" || evt.type === "user.updated") {
       const { id, email_addresses, first_name, last_name, image_url } = evt.data;
 
-      const email = email_addresses?.[0]?.email_address;
+      let email = email_addresses?.[0]?.email_address;
          if (!email) {
         try {
           const clerkUser = await clerkClient.users.getUser(id);

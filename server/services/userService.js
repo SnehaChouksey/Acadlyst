@@ -10,27 +10,7 @@ export async function getOrCreateUser(clerkId, email, name, profileImage) {
       where: { clerkId },
     });
 
-     if (!user) {
-      // Try to get real data from Clerk, but fall back to placeholders if needed
-      try {
-        const clerkUser = await clerkClient.users.getUser(clerkId);
-        const email = clerkUser.emailAddresses?.[0]?.emailAddress || `${clerkId}@placeholder.local`;
-        const name = `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim() || "User";
-        const imageUrl = clerkUser.imageUrl;
-
-        user = await getOrCreateUser(clerkId, email, name, imageUrl);
-        console.log("🆕 Created user on-demand via checkCredits:", user.email);
-      } catch (clerkErr) {
-        console.log("⚠️ Clerk fetch failed in checkCredits, using placeholder:", clerkErr.message);
-        user = await getOrCreateUser(
-          clerkId,
-          `${clerkId}@placeholder.local`,
-          "User",
-          null
-        );
-      }
-    }
-
+    
     if (user) return user;
 
     if (email) {
@@ -48,7 +28,8 @@ export async function getOrCreateUser(clerkId, email, name, profileImage) {
         return user;
       }
     }
-
+    
+      const safeEmail = email || `${clerkId}@placeholder.local`;
     
       const isOwner = process.env.OWNER_EMAIL?.split(",")
         .map(e => e.trim().toLowerCase())
@@ -80,11 +61,37 @@ export async function getOrCreateUser(clerkId, email, name, profileImage) {
 
 export async function checkCredits(clerkId, feature) {
   try {
-    const user = await prisma.user.findUnique({
+    let user = await prisma.user.findUnique({
       where: { clerkId },
     });
 
-    if (!user) throw new Error("User not found");
+   if (!user) {
+      console.log("ℹ️ No user in DB for clerkId, creating in checkCredits:", clerkId);
+
+       try {
+        const clerkUser = await clerkClient.users.getUser(clerkId);
+        const email =
+          clerkUser.emailAddresses?.[0]?.emailAddress ||
+          `${clerkId}@placeholder.local`;
+        const name =
+          `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim() ||
+          "User";
+        const imageUrl = clerkUser.imageUrl;
+
+        user = await getOrCreateUser(clerkId, email, name, imageUrl);
+      } catch (clerkError) {
+        console.log(
+          "⚠️ Clerk API error in checkCredits, using placeholder user:",
+          clerkError.message
+        );
+        user = await getOrCreateUser(
+          clerkId,
+          `${clerkId}@placeholder.local`,
+          "User",
+          null
+        );
+      }
+    }
 
     
     try {
@@ -211,8 +218,32 @@ export async function deductCredits(clerkId, feature) {
       where: { clerkId },
     });
 
-    if (!user) throw new Error("User not found");
+    if (!user) {
+      console.log("ℹ️ No user in DB for clerkId, creating in checkCredits:", clerkId);
+      try {
+        const clerkUser = await clerkClient.users.getUser(clerkId);
+        const email =
+          clerkUser.emailAddresses?.[0]?.emailAddress ||
+          `${clerkId}@placeholder.local`;
+        const name =
+          `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim() ||
+          "User";
+        const imageUrl = clerkUser.imageUrl;
 
+        user = await getOrCreateUser(clerkId, email, name, imageUrl);
+      } catch (clerkError) {
+        console.log(
+          "⚠️ Clerk API error in checkCredits, using placeholder user:",
+          clerkError.message
+        );
+        user = await getOrCreateUser(
+          clerkId,
+          `${clerkId}@placeholder.local`,
+          "User",
+          null
+        );
+      }
+    }
     
     try {
       const clerkUser = await clerkClient.users.getUser(clerkId);
@@ -333,7 +364,33 @@ export async function checkChatMessageCredits(clerkId) {
       where: { clerkId },
     });
 
-    if (!user) throw new Error("User not found");
+    if (!user) {
+      console.log("ℹ️ No user in DB for clerkId, creating in checkCredits:", clerkId);
+      try {
+        const clerkUser = await clerkClient.users.getUser(clerkId);
+        const email =
+          clerkUser.emailAddresses?.[0]?.emailAddress ||
+          `${clerkId}@placeholder.local`;
+        const name =
+          `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim() ||
+          "User";
+        const imageUrl = clerkUser.imageUrl;
+
+        user = await getOrCreateUser(clerkId, email, name, imageUrl);
+      } catch (clerkError) {
+        console.log(
+          "⚠️ Clerk API error in checkCredits, using placeholder user:",
+          clerkError.message
+        );
+        user = await getOrCreateUser(
+          clerkId,
+          `${clerkId}@placeholder.local`,
+          "User",
+          null
+        );
+      }
+    }
+
 
     
     try {
@@ -378,7 +435,33 @@ export async function deductChatMessageCredits(clerkId) {
       where: { clerkId },
     });
 
-    if (!user) throw new Error("User not found");
+   if (!user) {
+      console.log("ℹ️ No user in DB for clerkId, creating in checkCredits:", clerkId);
+      try {
+        const clerkUser = await clerkClient.users.getUser(clerkId);
+        const email =
+          clerkUser.emailAddresses?.[0]?.emailAddress ||
+          `${clerkId}@placeholder.local`;
+        const name =
+          `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim() ||
+          "User";
+        const imageUrl = clerkUser.imageUrl;
+
+        user = await getOrCreateUser(clerkId, email, name, imageUrl);
+      } catch (clerkError) {
+        console.log(
+          "⚠️ Clerk API error in checkCredits, using placeholder user:",
+          clerkError.message
+        );
+        user = await getOrCreateUser(
+          clerkId,
+          `${clerkId}@placeholder.local`,
+          "User",
+          null
+        );
+      }
+    }
+
 
   
     try {
