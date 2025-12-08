@@ -18,31 +18,39 @@ export default function QuizGeneratorPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Read ?source=... from URL
-  const sourceParam = searchParams.get("source");
-  const initialTab =
-    sourceParam === "pdf" || sourceParam === "youtube" || sourceParam === "text"
-      ? sourceParam
-      : "text";
+const [isMounted, setIsMounted] = React.useState(false);
+React.useEffect(() => {
+  setIsMounted(true);
+}, []);
 
-  const [activeTab, setActiveTab] = React.useState(initialTab);
+const sourceParam = isMounted ? searchParams.get("source") : null;
+const initialTab =
+  sourceParam === "pdf" || sourceParam === "youtube" || sourceParam === "text"
+    ? sourceParam
+    : "text";
 
-  // Keep state in sync if user navigates with different query
-  React.useEffect(() => {
-    if (sourceParam && sourceParam !== activeTab) {
-      if (["text", "pdf", "youtube"].includes(sourceParam)) {
-        setActiveTab(sourceParam);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sourceParam]);
+const [activeTab, setActiveTab] = React.useState(initialTab);
+
+React.useEffect(() => {
+  if (!isMounted) return;
+  if (!sourceParam) return;
+  if (
+    (sourceParam === "text" ||
+      sourceParam === "pdf" ||
+      sourceParam === "youtube") &&
+    sourceParam !== activeTab
+  ) {
+    setActiveTab(sourceParam);
+  }
+}, [sourceParam, isMounted]);
 
   const handleTabChange = (value: string) => {
-    setActiveTab(value);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("source", value);
-    router.replace(`/quiz?${params.toString()}`);
-  };
+  if (!isMounted) return;
+  setActiveTab(value as "text" | "pdf" | "youtube");
+  const params = new URLSearchParams(searchParams.toString());
+  params.set("source", value);
+  router.replace(`/quiz?${params.toString()}`);
+};
 
   return (
     <>
