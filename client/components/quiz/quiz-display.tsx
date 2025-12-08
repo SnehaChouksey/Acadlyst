@@ -191,7 +191,7 @@ export default function QuizDisplay({ quiz, onRestart }: QuizDisplayProps) {
             </div>
           )}
 
-          {/* NAVIGATION BUTTONS */}
+          
           <div className="flex flex-col sm:flex-row gap-3 pt-4">
 
             <Button
@@ -231,7 +231,7 @@ export default function QuizDisplay({ quiz, onRestart }: QuizDisplayProps) {
   );
 }
 
-// ---------------- RESULTS VIEW ---------------- //
+
 
 function QuizResultsView({ quiz, score, userAnswers, onRestart }: any) {
   const totalQuestions = quiz.totalQuestions || quiz.questions.length;
@@ -242,7 +242,7 @@ function QuizResultsView({ quiz, score, userAnswers, onRestart }: any) {
   return (
     <div className="space-y-6 w-full">
 
-      {/* SCORE CARD */}
+      {/* RESULTS SUMMARY CARD */}
       <Card className="border bg-card/50 shadow-2xl w-full">
         <CardContent className="p-4 sm:p-6">
 

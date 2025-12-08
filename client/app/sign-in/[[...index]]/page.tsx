@@ -5,6 +5,7 @@ import { clerkAppearanceDark, clerkAppearanceLight } from "@/lib/clerkAppearance
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { FeatureNavbar } from "@/components/ui/featureNavbar";
+import DiamondGridBackground from "@/components/ui/DiamondGridBackground";
 
 
 export default function SignInPage() {
@@ -20,14 +21,19 @@ export default function SignInPage() {
   const currentTheme = mounted ? (resolvedTheme || theme) : "dark";
   const appearance = currentTheme === "dark" ? clerkAppearanceDark : clerkAppearanceLight;
 
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <FeatureNavbar onOpenSidebar={() => {}} />
-      <SignIn
-        appearance={appearance}
-        routing="path"
-        path="/sign-in"
-      />
+ return (
+  <div className="relative min-h-screen overflow-hidden">
+  
+    <div className="absolute inset-0">
+      <DiamondGridBackground />
     </div>
-  );
+
+    
+    <div className="relative z-10 flex min-h-screen items-center justify-center bg-background/30">
+      <FeatureNavbar onOpenSidebar={() => {}} />
+      <SignIn appearance={appearance} routing="path" path="/sign-in" />
+    </div>
+  </div>
+);
+
 }

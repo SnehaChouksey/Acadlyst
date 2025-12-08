@@ -68,7 +68,7 @@ export default function UpgradeModal({ open, onClose, feature }: UpgradeModalPro
           </Button>
           <Button
             onClick={handleUpgrade}
-            className="flex-1 sm:flex-none bg-linear-to-r from-pink-600 to-orange-600 hover:from-pink-700 hover:to-orange-700"
+            className="flex-1 sm:flex-none bg-linear-to-r from-pink-600 to-pink-500 hover:from-pink-700 hover:to-pink-800"
           >
             Upgrade Now
           </Button>

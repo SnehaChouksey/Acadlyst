@@ -37,7 +37,7 @@ export const clerkAppearanceDark: Appearance = {
       justifyContent: "center",
       gap: "0.5rem",
       borderRadius: "0.375rem",
-      border: "1.5px solid rgba(255, 255, 255, 0.3)",
+      border: "1.5px solid rgba(255, 255, 255, 0.9)",
       backgroundColor: "#18181b",
       padding: "0.5rem 0.75rem",
       fontSize: "0.875rem",
@@ -46,7 +46,7 @@ export const clerkAppearanceDark: Appearance = {
       transition: "all 0.2s",
       "&:hover": {
         backgroundColor: "#27272a",
-        borderColor: "rgba(255, 255, 255, 0.5)",
+        borderColor: "rgba(255, 255, 255, 0.9)",
       },
     },
     socialButtonsBlockButton: {

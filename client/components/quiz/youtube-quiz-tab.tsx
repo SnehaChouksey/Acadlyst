@@ -132,18 +132,21 @@ export default function YoutubeQuizTab() {
   return (
     <>
       <Card className="border border-accent/30 bg-card shadow-2xl max-h-100 w-full">
-        {/* Responsive padding */}
+        
         <CardContent className="p-6 sm:p-10 md:p-20 space-y-4">
 
-          {/* Header section */}
-          <div className="flex flex-col items-center gap-2 mb-4 text-center">
+      
+          <div className="flex flex-col items-center gap-2 mb-2 text-center">
             <FaYoutube className="h-10 w-10 sm:h-12 sm:w-12 text-red-500" />
             <label className="text-xl sm:text-2xl font-semibold text-slate-300">
               YouTube Video URL
             </label>
+            <p className="text-sm sm:text-base text-center text-muted-foreground max-w-md">
+              Paste the link of the YouTube video to generate an interactive quiz from it.
+            </p>
           </div>
 
-          {/* Input */}
+  
           <input
             type="text"
             value={youtubeUrl}
@@ -155,14 +158,14 @@ export default function YoutubeQuizTab() {
             className="w-full p-3 bg-background text-slate-100 border border-foreground/20 hover:border-white rounded-lg focus:outline-none focus:border-blue-500 text-sm sm:text-base"
           />
 
-          {/* Error message */}
+    
           {error && (
             <div className="p-3 bg-red-900/20 border border-red-700/30 rounded-lg text-red-400 text-sm">
               {error}
             </div>
           )}
 
-          {/* Loading skeleton */}
+        
           {loading && (
             <div className="space-y-4">
               <Skeleton className="h-24 w-full bg-accent/20" />
@@ -172,7 +175,7 @@ export default function YoutubeQuizTab() {
             </div>
           )}
 
-          {/* Button */}
+      
           {!loading && (
             <Button
               onClick={handleGenerateQuiz}
@@ -185,7 +188,7 @@ export default function YoutubeQuizTab() {
         </CardContent>
       </Card>
 
-      {/* Upgrade modal */}
+  
       <UpgradeModal 
         open={showUpgrade} 
         onClose={() => setShowUpgrade(false)}
