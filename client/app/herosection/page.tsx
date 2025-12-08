@@ -76,20 +76,29 @@ export default function HeroSection() {
             <Link
               href="/quiz"
               onClick={handleProtectedClick}
-              className="inline-block rounded-4xl text-base sm:text-lg px-8 py-2.5 text-white font-semibold bg-linear-to-r from-[#E23B6D] to-[#ff0077] shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-rose-400"
+              className="inline-block rounded-4xl text-base sm:text-lg px-8 py-2.5 text-white font-semibold bg-linear-to-r from-[#ff5286] to-[#ff0f7f] shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-rose-400 hover:bg-linear-to-r hover:from-[#ff2e70] hover:to-[#ff007b]"
             >
               Quiz
             </Link>
           </motion.div>
 
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-            <Link
-              href="/qna/pdf"
-              onClick={handleProtectedClick}
-              className="inline-block rounded-4xl text-base sm:text-lg px-8 py-2 border-2 border-accent text-accent font-semibold hover:bg-accent transition-all focus:outline-none focus:ring-2 focus:ring-rose-400 hover:text-white hover:shadow-xl"
-            >
-              Chat
-            </Link>
+           <Link
+  href="/qna/pdf"
+  onClick={handleProtectedClick}
+  className="
+    inline-block rounded-4xl text-base sm:text-lg px-8 py-2
+    border-2 border-accent text-accent font-semibold
+    transition-all duration-150
+    shadow-[0_0_12px_rgba(244,114,182,0.25)]
+    hover:bg-accent hover:text-white hover:shadow-[0_0_18px_rgba(244,114,182,0.45)]
+    focus:outline-none focus:ring-2 focus:ring-rose-400
+    animate-[borderGlow_2.2s_ease-in-out_infinite]
+  "
+>
+  Chat
+</Link>
+
           </motion.div>
         </motion.div>
 

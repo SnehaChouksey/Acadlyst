@@ -92,7 +92,6 @@ export default function YoutubeQuizTab() {
 
     const interval = setInterval(async () => {
       attempts++;
-      
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz/status/${jobId}`);
         const data = await res.json();
@@ -131,52 +130,37 @@ export default function YoutubeQuizTab() {
 
   return (
     <>
-      <Card className="border border-accent/30 bg-card shadow-2xl max-h-100 w-full">
-        
-        <CardContent className="p-6 sm:p-10 md:p-20 space-y-4">
-
       
-          <div className="flex flex-col items-center gap-2 mb-2 text-center">
-            <FaYoutube className="h-10 w-10 sm:h-12 sm:w-12 text-red-500" />
-            <label className="text-xl sm:text-2xl font-semibold text-slate-300">
-              YouTube Video URL
-            </label>
-            <p className="text-sm sm:text-base text-center text-muted-foreground max-w-md">
-              Paste the link of the YouTube video to generate an interactive quiz from it.
-            </p>
-          </div>
-
-  
-          <input
-            type="text"
-            value={youtubeUrl}
-            onChange={(e) => {
-              setYoutubeUrl(e.target.value);
-              setError('');
-            }}
-            placeholder="Paste YouTube link (e.g., https://www.youtube.com/watch?v=...)"
-            className="w-full p-3 bg-background text-slate-100 border border-foreground/20 hover:border-white rounded-lg focus:outline-none focus:border-blue-500 text-sm sm:text-base"
-          />
-
-    
-          {error && (
-            <div className="p-3 bg-red-900/20 border border-red-700/30 rounded-lg text-red-400 text-sm">
-              {error}
-            </div>
-          )}
-
-        
-          {loading && (
-            <div className="space-y-4">
-              <Skeleton className="h-24 w-full bg-accent/20" />
-              <p className="text-center text-muted-foreground text-sm">
-                Fetching transcript and generating quiz...
+      {!loading && (
+        <Card className="border border-accent/30 bg-card shadow-2xl max-h-100 w-full">
+          <CardContent className="p-6 sm:p-10 md:p-20 space-y-4">
+            <div className="flex flex-col items-center gap-2 mb-2 text-center">
+              <FaYoutube className="h-10 w-10 sm:h-12 sm:w-12 text-red-500" />
+              <label className="text-xl sm:text-2xl font-semibold text-slate-300">
+                YouTube Video URL
+              </label>
+              <p className="text-sm sm:text-base text-center text-muted-foreground max-w-md">
+                Paste the link of the YouTube video to generate an interactive quiz from it.
               </p>
             </div>
-          )}
 
-      
-          {!loading && (
+            <input
+              type="text"
+              value={youtubeUrl}
+              onChange={(e) => {
+                setYoutubeUrl(e.target.value);
+                setError('');
+              }}
+              placeholder="Paste YouTube link (e.g., https://www.youtube.com/watch?v=...)"
+              className="w-full p-3 bg-background text-slate-100 border border-foreground/20 hover:border-white rounded-lg focus:outline-none focus:border-blue-500 text-sm sm:text-base"
+            />
+
+            {error && (
+              <div className="p-3 bg-red-900/20 border border-red-700/30 rounded-lg text-red-400 text-sm">
+                {error}
+              </div>
+            )}
+
             <Button
               onClick={handleGenerateQuiz}
               disabled={!youtubeUrl.trim() || loading}
@@ -184,11 +168,41 @@ export default function YoutubeQuizTab() {
             >
               Generate Quiz from Video
             </Button>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
-  
+      {/* WHEN LOADING: quiz-shaped skeleton card instead of form card */}
+      {loading && (
+        <Card className="border border-accent/40 bg-card shadow-2xl w-full">
+          <CardContent className="p-6 sm:p-8 md:p-10 space-y-6">
+            {/* Header skeleton */}
+            <div className="space-y-3">
+              <Skeleton className="h-6 w-2/3 sm:w-1/2 bg-foreground/40" />
+    
+            </div>
+
+            {/* Question skeleton */}
+            <div className="space-y-3 mt-2">
+              <Skeleton className="h-5 w-5/6 bg-foreground/35" />
+            
+            </div>
+
+            {/* Options skeleton */}
+            <div className="space-y-3 mt-4">
+              <Skeleton className="h-11 w-full bg-foreground/25 rounded-lg" />
+              <Skeleton className="h-11 w-full bg-foreground/25 rounded-lg" />
+              <Skeleton className="h-11 w-full bg-foreground/25 rounded-lg" />
+              <Skeleton className="h-11 w-full bg-foreground/25 rounded-lg" />
+            </div>
+
+            <p className="text-center text-muted-foreground text-xs sm:text-sm ">
+              Fetching transcript and generating quiz questions...
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       <UpgradeModal 
         open={showUpgrade} 
         onClose={() => setShowUpgrade(false)}

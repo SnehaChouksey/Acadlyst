@@ -41,7 +41,7 @@ export default function UpgradeModal({ open, onClose, feature }: UpgradeModalPro
         <div className="space-y-4 py-4">
           <div className="rounded-lg border bg-linear-to-br from-pink-50/10 to-pink-50/10 p-6">
             <h3 className="text-3xl font-bold mb-2">
-              $5<span className="text-lg font-normal text-muted-foreground">/month</span>
+              $2<span className="text-lg font-normal text-muted-foreground">/month</span>
             </h3>
             <p className="text-sm text-muted-foreground mb-4">
               Everything you need to excel
@@ -58,7 +58,7 @@ export default function UpgradeModal({ open, onClose, feature }: UpgradeModalPro
           </div>
         </div>
 
-        <DialogFooter className="flex gap-2 sm:gap-0">
+        <DialogFooter className="flex gap-4 sm:gap-2">
           <Button
             variant="outline"
             onClick={onClose}

@@ -12,6 +12,7 @@ import { useAuth } from "@clerk/nextjs";
 import UpgradeModal from "@/components/upgrade-modal";
 import Sidebar from '@/components/sidebar';
 import { FeatureNavbar } from '@/components/ui/featureNavbar';
+import { useSearchParams, useRouter } from "next/navigation";
 
 interface SummaryResponse {
   key_points: string[];
@@ -25,7 +26,33 @@ export default function SummarizerPage() {
   // ✅ ADDED: Mobile sidebar state
   const [openSidebar, setOpenSidebar] = React.useState(false);
 
-  const [tab, setTab] = React.useState('pdf');
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const sourceParam = searchParams.get("source");
+  const initialTab =
+  sourceParam === "video" || sourceParam === "pdf" ? sourceParam : "pdf";
+
+  const [tab, setTab] = React.useState(initialTab);
+
+  React.useEffect(() => {
+  if (!sourceParam) return;
+
+  if ((sourceParam === "pdf" || sourceParam === "video") && sourceParam !== tab) {
+    setTab(sourceParam);
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [sourceParam]);
+
+  const handleTabChange = (value: string) => {
+    setTab(value);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("source", value);
+    router.replace(`/summarizer/pdf?${params.toString()}`);
+  };
+
+
+
   const [pdfSummary, setPdfSummary] = React.useState<SummaryResponse | null>(null);
   const [youtubeummary, setYoutubeummary] = React.useState<SummaryResponse | null>(null);
   const [loading, setLoading] = React.useState(false);
@@ -214,7 +241,7 @@ export default function SummarizerPage() {
 
           
           <Card className="w-full h-full flex flex-col rounded-2xl overflow-hidden border border-background bg-linear-br from-background/30 to-background/70 shadow-2xl mb-2">
-            <Tabs value={tab} onValueChange={setTab} className="w-full px-6 py-3">
+            <Tabs value={tab} onValueChange={handleTabChange} className="w-full px-6 py-3">
               
               
               <TabsList className="w-full grid grid-cols-2 gap-3 mb-4 rounded-lg p-1 max-h-12">

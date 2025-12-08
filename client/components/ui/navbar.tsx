@@ -4,9 +4,9 @@ import React from "react";
 import Link from "next/link";
 import {
   FileText,
-  Youtube,
   Text as TextIcon,
 } from "lucide-react";
+import { FaYoutube } from "react-icons/fa";
 import {
   NavigationMenu,
   NavigationMenuList,
@@ -28,13 +28,25 @@ function SubMenuRow({
   description: string;
 }) {
   return (
-    <div className="flex items-center gap-2 px-4 py-2 rounded text-sm bg-accent/10 dark:bg-accent/30 my-1 select-none cursor-default">
+    <div
+      className="
+        flex items-center gap-2 rounded-md border border-transparent
+        px-3 py-1.5 my-0.5
+        text-xs md:text-sm
+        bg-transparent
+        hover:bg-accent/10 hover:border-accent/40
+        transition-colors cursor-pointer
+      "
+    >
       <Icon className="w-4 h-4 text-accent" />
       <div className="font-medium">{label}</div>
-      <span className="ml-2 text-xs text-muted-foreground">{description}</span>
+      <span className="ml-2 text-[11px] text-muted-foreground">
+        {description}
+      </span>
     </div>
   );
 }
+
 
 export function NavigationMenuMain() {
   const { isSignedIn } = useAuth();
@@ -53,13 +65,7 @@ export function NavigationMenuMain() {
       {redirect && <RedirectToSignIn />}
       <NavigationMenu>
         <NavigationMenuList className="gap-1">
-          <NavigationMenuItem>
-            <NavigationMenuLink asChild>
-              <Link href="/" className={navigationMenuTriggerStyle()}>
-                Home
-              </Link>
-            </NavigationMenuLink>
-          </NavigationMenuItem>
+
           <NavigationMenuItem>
             <Link href="/qna/pdf" onClick={handleProtectedClick}>
               <NavigationMenuTrigger>Chat</NavigationMenuTrigger>
@@ -70,65 +76,120 @@ export function NavigationMenuMain() {
                 <div className="text-xs text-muted-foreground mb-2">
                   Ask and get answers from your notes and PDFs.
                 </div>
+                <NavigationMenuLink asChild>
+                <Link
+                href="/qna/pdf"
+                onClick={handleProtectedClick}
+                className="block"
+                >
                 <SubMenuRow
                   label="PDF"
                   icon={FileText}
                   description="Chat about your PDF"
                 />
+                 </Link>
+                </NavigationMenuLink>
               </div>
             </NavigationMenuContent>
-          </NavigationMenuItem>
+           </NavigationMenuItem>
           <NavigationMenuItem>
-            <Link href="/summarizer/pdf" onClick={handleProtectedClick}>
-              <NavigationMenuTrigger>Summarizer</NavigationMenuTrigger>
-            </Link>
-            <NavigationMenuContent>
-              <div className="px-4 py-3 min-w-[230px]">
-                <div className="font-semibold text-base mb-1">Summarizer</div>
-                <div className="text-xs text-muted-foreground mb-2">
-                  Summarize your notes in seconds.
-                </div>
-                <SubMenuRow
-                  label="PDF"
-                  icon={FileText}
-                  description="Summarize your PDF"
-                />
-                <SubMenuRow
-                  label="YouTube Video"
-                  icon={Youtube}
-                  description="Summarize your video"
-                />
-              </div>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
+           <Link href="/summarizer/pdf?source=pdf" onClick={handleProtectedClick}>
+        <NavigationMenuTrigger>Summarizer</NavigationMenuTrigger>
+  </Link>
+  <NavigationMenuContent>
+    <div className="px-3 py-2 min-w-[230px]">
+      <div className="font-semibold text-base mb-1">Summarizer</div>
+      <div className="text-xs text-muted-foreground mb-2">
+        Summarize your notes in seconds.
+      </div>
+
+      <NavigationMenuLink asChild>
+        <Link
+          href="/summarizer/pdf?source=pdf"
+          onClick={handleProtectedClick}
+          className="block"
+        >
+          <SubMenuRow
+            label="PDF"
+            icon={FileText}
+            description="Summarize your PDF"
+          />
+        </Link>
+      </NavigationMenuLink>
+
+      <NavigationMenuLink asChild>
+        <Link
+          href="/summarizer/pdf?source=video"
+          onClick={handleProtectedClick}
+          className="block"
+        >
+          <SubMenuRow
+            label="YouTube Video"
+            icon={FaYoutube}
+            description="Summarize your video"
+          />
+        </Link>
+      </NavigationMenuLink>
+    </div>
+  </NavigationMenuContent>
+</NavigationMenuItem>
+
           <NavigationMenuItem>
-            <Link href="/quiz" onClick={handleProtectedClick}>
-              <NavigationMenuTrigger>Quiz</NavigationMenuTrigger>
-            </Link>
-            <NavigationMenuContent>
-              <div className="px-4 py-3 min-w-[230px]">
-                <div className="font-semibold text-base mb-1">Quiz</div>
-                <div className="text-xs text-muted-foreground mb-2">
-                  Generate quizzes for practice.
-                </div>
-                <SubMenuRow
-                  label="PDF"
-                  icon={FileText}
-                  description="Quiz from your PDF"
-                />
-                <SubMenuRow
-                  label="YouTube Video"
-                  icon={Youtube}
-                  description="Quiz from your video"
-                />
-                <SubMenuRow
-                  label="Text"
-                  icon={TextIcon}
-                  description="Quiz from your text"
-                />
-              </div>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
+         <Link href="/quiz?source=text" onClick={handleProtectedClick}>
+    <NavigationMenuTrigger>Quiz</NavigationMenuTrigger>
+  </Link>
+  <NavigationMenuContent>
+    <div className="px-3 py-2 min-w-[230px]">
+      <div className="font-semibold text-base mb-1">Quiz</div>
+      <div className="text-xs text-muted-foreground mb-2">
+        Generate quizzes for practice.
+      </div>
+
+      <NavigationMenuLink asChild>
+        <Link
+          href="/quiz?source=pdf"
+          onClick={handleProtectedClick}
+          className="block"
+        >
+          <SubMenuRow
+            label="PDF"
+            icon={FileText}
+            description="Quiz from your PDF"
+          />
+        </Link>
+      </NavigationMenuLink>
+
+      <NavigationMenuLink asChild>
+        <Link
+          href="/quiz?source=youtube"
+          onClick={handleProtectedClick}
+          className="block"
+        >
+          <SubMenuRow
+            label="YouTube Video"
+            icon={FaYoutube}
+            description="Quiz from your video"
+          />
+        </Link>
+      </NavigationMenuLink>
+
+      <NavigationMenuLink asChild>
+        <Link
+          href="/quiz?source=text"
+          onClick={handleProtectedClick}
+          className="block"
+        >
+          <SubMenuRow
+            label="Text"
+            icon={TextIcon}
+            description="Quiz from your text"
+          />
+        </Link>
+      </NavigationMenuLink>
+    </div>
+     </NavigationMenuContent>
+     </NavigationMenuItem>
+
         </NavigationMenuList>
       </NavigationMenu>
     </>

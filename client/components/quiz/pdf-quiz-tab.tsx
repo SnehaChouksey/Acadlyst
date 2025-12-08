@@ -44,12 +44,14 @@ export default function PdfQuizTab() {
 
       if (res.status === 403) {
         setShowUpgrade(true);
+        setLoading(false);
         return;
       }
 
       const uploadResponse = await res.json();
 
       if (uploadResponse.jobId) pollJobStatus(uploadResponse.jobId);
+      else setLoading(false);
     } catch (error) {
       console.error('Error:', error);
       alert('Error generating quiz. Please try again.');
@@ -99,15 +101,11 @@ export default function PdfQuizTab() {
 
   return (
     <>
-      <Card className="border border-accent/50 bg-card shadow-2xl w-full">
-
-        {/* Responsive padding: small on mobile, large on desktop */}
-        <CardContent className="p-4 sm:p-6 md:p-8">
-
-          {/* Upload block */}
-          {!loading && (
+      {/* When not loading: upload card */}
+      {!loading && (
+        <Card className="border border-accent/50 bg-card shadow-2xl w-full">
+          <CardContent className="p-4 sm:p-6 md:p-8">
             <div className="flex flex-col items-center text-center rounded-xl p-6 sm:p-10 md:p-12 bg-card space-y-4">
-
               <p className="text-foreground text-lg sm:text-xl font-medium">
                 Upload a PDF and test your knowledge with Acadlyst 🧠
               </p>
@@ -116,26 +114,38 @@ export default function PdfQuizTab() {
                 <FileUploadComponent onUploaded={handleFileUpload} />
               </div>
             </div>
-          )}
+          </CardContent>
+        </Card>
+      )}
 
-          {/* Loading block */}
-          {loading && (
-            <div className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-lg sm:text-xl mb-3 text-slate-300">
-                  Generating Quiz
-                </h3>
-
-                <Skeleton className="h-32 sm:h-40 w-full bg-accent/30" />
-              </div>
-
-              <p className="text-center text-muted-foreground text-sm sm:text-base">
-                Analyzing document and generating quiz questions...
-              </p>
+      {/* When loading: full quiz-shaped skeleton card in same place */}
+      {loading && (
+        <Card className="border border-accent/50 bg-card shadow-2xl w-full">
+          <CardContent className="p-6 sm:p-8 md:p-10 space-y-6">
+            {/* Header skeleton */}
+            <div className="space-y-3">
+              <Skeleton className="h-6 w-2/3 sm:w-1/2 bg-foreground/40" />
             </div>
-          )}
-        </CardContent>
-      </Card>
+
+            {/* Question skeleton */}
+            <div className="space-y-3 mt-2">
+              <Skeleton className="h-5 w-5/6 bg-foreground/35" />
+            </div>
+
+            {/* Options skeleton */}
+            <div className="space-y-3 mt-4">
+              <Skeleton className="h-11 w-full bg-foreground/25 rounded-lg" />
+              <Skeleton className="h-11 w-full bg-foreground/25 rounded-lg" />
+              <Skeleton className="h-11 w-full bg-foreground/25 rounded-lg" />
+              <Skeleton className="h-11 w-full bg-foreground/25 rounded-lg" />
+            </div>
+
+            <p className="text-center text-muted-foreground text-xs sm:text-sm ">
+              Analyzing your PDF and generating quiz questions...
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       <UpgradeModal
         open={showUpgrade}

@@ -11,7 +11,6 @@ interface RecentChat {
 }
 
 const navItems = [
-  { label: "Dashboard", href: "/", icon: Home },
   { label: "Chat", href: "/qna/pdf", icon: MessageSquare },
   { label: "Summarizer", href: "/summarizer/pdf", icon: FileText },
   { label: "Quiz", href: "/quiz", icon: Brain },
@@ -55,7 +54,7 @@ export default function Sidebar({
     
       {open && (
         <div
-          className="fixed inset-0 bg-black/90 z-[90] md:hidden"
+          className="fixed inset-0 bg-black/90 z-90 md:hidden"
           onClick={() => setOpen(false)}
         />
       )}
@@ -63,8 +62,8 @@ export default function Sidebar({
     
       <aside
         className={`
-          h-screen w-[210px] fixed top-0 left-0 z-[100]
-          bg-background/90 border-r border-accent/15 pt-6 px-0 flex flex-col backdrop-blur
+          h-screen w-[210px] fixed top-0 left-0 z-100
+          bg-background/90 border-r border-accent/15 pt-2 px-0 flex flex-col backdrop-blur
           transition-transform duration-300
           ${open ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
         `}
@@ -81,14 +80,25 @@ export default function Sidebar({
         </button>
 
       
-<div className="hidden md:flex items-center gap-3 px-5 pb-6">
-  <img
-    src="/acadlyst_logo.png"
-    alt="Acadlyst Logo"
-    className="w-10 h-10"
-  />
-  <span className="font-bold text-xl">Acadlyst</span>
+           <div className="hidden md:flex flex-col mb-4 ">
+  {/* Clickable logo + brand */}
+  <Link
+    href="/"
+    className="flex items-center gap-3 px-2 "
+    onClick={() => setOpen(false)}
+  >
+    <img
+      src="/acadlyst_logo.png"
+      alt="Acadlyst Logo"
+      className="w-12 h-12"
+    />
+    <span className="font-bold text-2xl">Acadlyst</span>
+  </Link>
+
+  {/* Full-width separator aligned with main border */}
+  <div className="h-px w-full bg-accent/25 mt-2" />
 </div>
+
 
     
 
