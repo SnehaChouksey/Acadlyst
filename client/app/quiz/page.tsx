@@ -1,9 +1,6 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
 import React from "react";
-import { useSearchParams, useRouter } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Brain, FileText, Type } from "lucide-react";
 import { FaYoutube } from "react-icons/fa";
@@ -15,42 +12,9 @@ import Sidebar from "@/components/sidebar";
 
 export default function QuizGeneratorPage() {
   const [openSidebar, setOpenSidebar] = React.useState(false);
-  const searchParams = useSearchParams();
-  const router = useRouter();
-
-const [isMounted, setIsMounted] = React.useState(false);
-React.useEffect(() => {
-  setIsMounted(true);
-}, []);
-
-const sourceParam = isMounted ? searchParams.get("source") : null;
-const initialTab =
-  sourceParam === "pdf" || sourceParam === "youtube" || sourceParam === "text"
-    ? sourceParam
-    : "text";
-
-const [activeTab, setActiveTab] = React.useState(initialTab);
-
-React.useEffect(() => {
-  if (!isMounted) return;
-  if (!sourceParam) return;
-  if (
-    (sourceParam === "text" ||
-      sourceParam === "pdf" ||
-      sourceParam === "youtube") &&
-    sourceParam !== activeTab
-  ) {
-    setActiveTab(sourceParam);
-  }
-}, [sourceParam, isMounted]);
-
-  const handleTabChange = (value: string) => {
-  if (!isMounted) return;
-  setActiveTab(value as "text" | "pdf" | "youtube");
-  const params = new URLSearchParams(searchParams.toString());
-  params.set("source", value);
-  router.replace(`/quiz?${params.toString()}`);
-};
+  const [activeTab, setActiveTab] = React.useState<"text" | "pdf" | "youtube">(
+    "text"
+  );
 
   return (
     <>
@@ -69,7 +33,13 @@ React.useEffect(() => {
         </div>
 
         <div className="w-full max-w-5xl">
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={(value) =>
+              setActiveTab(value as "text" | "pdf" | "youtube")
+            }
+            className="w-full"
+          >
             <TabsList className="w-full grid grid-cols-3 mb-2">
               <TabsTrigger value="text">
                 <Type className="h-4 w-4" /> Text

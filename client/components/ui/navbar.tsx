@@ -135,7 +135,7 @@ export function NavigationMenuMain() {
 </NavigationMenuItem>
 
           <NavigationMenuItem>
-         <Link href="/quiz?source=text" onClick={handleProtectedClick}>
+         <Link href="/quiz" onClick={handleProtectedClick}>
     <NavigationMenuTrigger>Quiz</NavigationMenuTrigger>
   </Link>
   <NavigationMenuContent>
@@ -147,7 +147,7 @@ export function NavigationMenuMain() {
 
       <NavigationMenuLink asChild>
         <Link
-          href="/quiz?source=pdf"
+          href="/quiz"
           onClick={handleProtectedClick}
           className="block"
         >
@@ -161,7 +161,7 @@ export function NavigationMenuMain() {
 
       <NavigationMenuLink asChild>
         <Link
-          href="/quiz?source=youtube"
+          href="/quiz"
           onClick={handleProtectedClick}
           className="block"
         >
