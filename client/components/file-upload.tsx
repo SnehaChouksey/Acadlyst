@@ -76,7 +76,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({ onUploaded }) => {
       onClick={!uploading ? handleFileUploadButtonClick : undefined}
     >
       <div className="flex justify-center items-center flex-row gap-3">
-        <Upload className="h-6 w-6 text-muted-foreground" />
+        <Upload className="h-6 w-6 text-black dark:text-muted-foreground" />
         <h3 className="text-lg font-medium">
           {uploading ? 'Uploading...' : 'Upload PDF File'}
         </h3>

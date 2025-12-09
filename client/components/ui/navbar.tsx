@@ -50,24 +50,29 @@ function SubMenuRow({
 
 export function NavigationMenuMain() {
   const { isSignedIn } = useAuth();
-  const [redirect, setRedirect] = React.useState(false);
-
   
-  const handleProtectedClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (!isSignedIn) {
-      e.preventDefault();
-      setRedirect(true);
-    }
-  };
+
+  const handleProtectedClick = (
+  e: React.MouseEvent<HTMLAnchorElement>,
+  targetPath: string
+) => {
+  if (!isSignedIn) {
+    e.preventDefault();
+    // send to sign-in with redirect_url
+    window.location.href = `/sign-in?redirect_url=${encodeURIComponent(
+      targetPath
+    )}`;
+  }
+};
 
   return (
     <>
-      {redirect && <RedirectToSignIn />}
+    
       <NavigationMenu>
         <NavigationMenuList className="gap-1">
 
           <NavigationMenuItem>
-            <Link href="/qna/pdf" onClick={handleProtectedClick}>
+            <Link href="/qna/pdf" onClick={(e) => handleProtectedClick(e, "/qna/pdf")}>
               <NavigationMenuTrigger>Chat</NavigationMenuTrigger>
             </Link>
             <NavigationMenuContent>
@@ -79,7 +84,7 @@ export function NavigationMenuMain() {
                 <NavigationMenuLink asChild>
                 <Link
                 href="/qna/pdf"
-                onClick={handleProtectedClick}
+                onClick={(e) => handleProtectedClick(e, "/qna/pdf")}
                 className="block"
                 >
                 <SubMenuRow
@@ -93,7 +98,7 @@ export function NavigationMenuMain() {
             </NavigationMenuContent>
            </NavigationMenuItem>
           <NavigationMenuItem>
-           <Link href="/summarizer/pdf" onClick={handleProtectedClick}>
+           <Link href="/summarizer/pdf" onClick={(e) => handleProtectedClick(e, "/summarizer/pdf")}>
         <NavigationMenuTrigger>Summarizer</NavigationMenuTrigger>
   </Link>
   <NavigationMenuContent>
@@ -106,7 +111,7 @@ export function NavigationMenuMain() {
       <NavigationMenuLink asChild>
         <Link
           href="/summarizer/pdf"
-          onClick={handleProtectedClick}
+          onClick={(e) => handleProtectedClick(e, "/summarizer/pdf")}
           className="block"
         >
           <SubMenuRow
@@ -120,7 +125,7 @@ export function NavigationMenuMain() {
       <NavigationMenuLink asChild>
         <Link
           href="/summarizer/pdf"
-          onClick={handleProtectedClick}
+          onClick={(e) => handleProtectedClick(e, "/summarizer/pdf")}
           className="block"
         >
           <SubMenuRow
@@ -135,7 +140,7 @@ export function NavigationMenuMain() {
 </NavigationMenuItem>
 
           <NavigationMenuItem>
-         <Link href="/quiz" onClick={handleProtectedClick}>
+         <Link href="/quiz" onClick={(e) => handleProtectedClick(e, "/quiz")}>
     <NavigationMenuTrigger>Quiz</NavigationMenuTrigger>
   </Link>
   <NavigationMenuContent>
@@ -148,7 +153,7 @@ export function NavigationMenuMain() {
       <NavigationMenuLink asChild>
         <Link
           href="/quiz"
-          onClick={handleProtectedClick}
+          onClick={(e) => handleProtectedClick(e, "/quiz")}
           className="block"
         >
           <SubMenuRow
@@ -162,7 +167,7 @@ export function NavigationMenuMain() {
       <NavigationMenuLink asChild>
         <Link
           href="/quiz"
-          onClick={handleProtectedClick}
+          onClick={(e) => handleProtectedClick(e, "/quiz")}
           className="block"
         >
           <SubMenuRow
@@ -176,7 +181,7 @@ export function NavigationMenuMain() {
       <NavigationMenuLink asChild>
         <Link
           href="/quiz?source=text"
-          onClick={handleProtectedClick}
+          onClick={(e) => handleProtectedClick(e, "/quiz")}
           className="block"
         >
           <SubMenuRow

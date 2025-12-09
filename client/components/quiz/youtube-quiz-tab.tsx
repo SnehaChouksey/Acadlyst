@@ -136,7 +136,7 @@ export default function YoutubeQuizTab() {
           <CardContent className="p-6 sm:p-10 md:p-20 space-y-4">
             <div className="flex flex-col items-center gap-2 mb-2 text-center">
               <FaYoutube className="h-10 w-10 sm:h-12 sm:w-12 text-red-500" />
-              <label className="text-xl sm:text-2xl font-semibold text-slate-300">
+              <label className="text-xl sm:text-2xl font-semibold text-foreground">
                 YouTube Video URL
               </label>
               <p className="text-sm sm:text-base text-center text-muted-foreground max-w-md">

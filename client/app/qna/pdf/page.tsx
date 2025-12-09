@@ -137,7 +137,7 @@ export default function QA() {
 
           {/* ALERTS */}
           {!pdfLoaded && (
-            <div className="mx-4 sm:mx-8 mt-2 p-3 bg-yellow-700/20 border-l-4 border-yellow-600 rounded text-yellow-300 flex items-center gap-2 text-sm">
+            <div className="mx-4 sm:mx-8 mt-2 p-3 bg-yellow-700/20 border-l-4 border-yellow-600 rounded text-yellow-600 flex items-center gap-2 text-sm dark:text-yellow-300">
               <AlertCircle className="h-5 w-5" />
               Please upload a PDF to start asking questions
             </div>
@@ -217,7 +217,7 @@ export default function QA() {
                   <Button
                     onClick={handleSend}
                     disabled={!input.trim() || loading || !pdfLoaded}
-                    className="h-[48px] w-[48px] min-w-[48px] rounded-lg bg-transparent hover:bg-accent/70 flex items-center justify-center"
+                    className="h-48px w-48px min-w-48px rounded-lg bg-transparent hover:bg-accent/70 flex items-center justify-center"
                   >
                     <Send className="h-6 w-6 text-foreground" />
                   </Button>

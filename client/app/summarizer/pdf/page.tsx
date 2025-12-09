@@ -323,7 +323,7 @@ export default function SummarizerPage() {
                   <div className="flex flex-col flex-1 justify-center items-center gap-5 px-4 md:px-40 py-18 border-2 border-accent rounded-2xl">
                     <div className="flex items-center gap-2 mb-1">
                       <FaYoutube className="h-15 w-15 text-red-500" />
-                      <label className="text-2xl font-bold text-slate-300">
+                      <label className="text-2xl font-bold text-foreground">
                         YouTube Video URL
                       </label>
                     </div>
@@ -348,7 +348,7 @@ export default function SummarizerPage() {
                     <Button
                       onClick={handleYoutubeSubmit}
                       disabled={!youtubeUrl.trim() || loading}
-                      className="w-full bg-pink-600 hover:bg-pink-700 h-12 text-base font-semibold"
+                      className="w-full bg-pink-600 hover:bg-pink-700 h-12 text-foreground font-semibold"
                     >
                       Generate Summary from Video
                     </Button>
