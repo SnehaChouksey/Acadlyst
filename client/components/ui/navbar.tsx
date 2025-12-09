@@ -47,32 +47,32 @@ function SubMenuRow({
   );
 }
 
-
 export function NavigationMenuMain() {
   const { isSignedIn } = useAuth();
-  
+  const [redirectTarget, setRedirectTarget] = React.useState<string | null>(null);
 
   const handleProtectedClick = (
-  e: React.MouseEvent<HTMLAnchorElement>,
-  targetPath: string
-) => {
-  if (!isSignedIn) {
-    e.preventDefault();
-    // send to sign-in with redirect_url
-    window.location.href = `/sign-in?redirect_url=${encodeURIComponent(
-      targetPath
-    )}`;
-  }
-};
+    e: React.MouseEvent<HTMLAnchorElement>,
+    targetPath: string
+  ) => {
+    if (!isSignedIn) {
+      e.preventDefault();
+      setRedirectTarget(targetPath);
+    }
+  };
 
   return (
     <>
-    
+      {redirectTarget && <RedirectToSignIn redirectUrl={redirectTarget} />}
+
       <NavigationMenu>
         <NavigationMenuList className="gap-1">
-
+          {/* Chat */}
           <NavigationMenuItem>
-            <Link href="/qna/pdf" onClick={(e) => handleProtectedClick(e, "/qna/pdf")}>
+            <Link
+              href="/qna/pdf"
+              onClick={(e) => handleProtectedClick(e, "/qna/pdf")}
+            >
               <NavigationMenuTrigger>Chat</NavigationMenuTrigger>
             </Link>
             <NavigationMenuContent>
@@ -82,119 +82,127 @@ export function NavigationMenuMain() {
                   Ask and get answers from your notes and PDFs.
                 </div>
                 <NavigationMenuLink asChild>
-                <Link
-                href="/qna/pdf"
-                onClick={(e) => handleProtectedClick(e, "/qna/pdf")}
-                className="block"
-                >
-                <SubMenuRow
-                  label="PDF"
-                  icon={FileText}
-                  description="Chat about your PDF"
-                />
-                 </Link>
+                  <Link
+                    href="/qna/pdf"
+                    onClick={(e) => handleProtectedClick(e, "/qna/pdf")}
+                    className="block"
+                  >
+                    <SubMenuRow
+                      label="PDF"
+                      icon={FileText}
+                      description="Chat about your PDF"
+                    />
+                  </Link>
                 </NavigationMenuLink>
               </div>
             </NavigationMenuContent>
-           </NavigationMenuItem>
+          </NavigationMenuItem>
+
+          {/* Summarizer */}
           <NavigationMenuItem>
-           <Link href="/summarizer/pdf" onClick={(e) => handleProtectedClick(e, "/summarizer/pdf")}>
-        <NavigationMenuTrigger>Summarizer</NavigationMenuTrigger>
-  </Link>
-  <NavigationMenuContent>
-    <div className="px-3 py-2 min-w-[230px]">
-      <div className="font-semibold text-base mb-1">Summarizer</div>
-      <div className="text-xs text-muted-foreground mb-2">
-        Summarize your notes in seconds.
-      </div>
+            <Link
+              href="/summarizer/pdf"
+              onClick={(e) => handleProtectedClick(e, "/summarizer/pdf")}
+            >
+              <NavigationMenuTrigger>Summarizer</NavigationMenuTrigger>
+            </Link>
+            <NavigationMenuContent>
+              <div className="px-3 py-2 min-w-[230px]">
+                <div className="font-semibold text-base mb-1">Summarizer</div>
+                <div className="text-xs text-muted-foreground mb-2">
+                  Summarize your notes in seconds.
+                </div>
 
-      <NavigationMenuLink asChild>
-        <Link
-          href="/summarizer/pdf"
-          onClick={(e) => handleProtectedClick(e, "/summarizer/pdf")}
-          className="block"
-        >
-          <SubMenuRow
-            label="PDF"
-            icon={FileText}
-            description="Summarize your PDF"
-          />
-        </Link>
-      </NavigationMenuLink>
+                <NavigationMenuLink asChild>
+                  <Link
+                    href="/summarizer/pdf"
+                    onClick={(e) => handleProtectedClick(e, "/summarizer/pdf")}
+                    className="block"
+                  >
+                    <SubMenuRow
+                      label="PDF"
+                      icon={FileText}
+                      description="Summarize your PDF"
+                    />
+                  </Link>
+                </NavigationMenuLink>
 
-      <NavigationMenuLink asChild>
-        <Link
-          href="/summarizer/pdf"
-          onClick={(e) => handleProtectedClick(e, "/summarizer/pdf")}
-          className="block"
-        >
-          <SubMenuRow
-            label="YouTube Video"
-            icon={FaYoutube}
-            description="Summarize your video"
-          />
-        </Link>
-      </NavigationMenuLink>
-    </div>
-  </NavigationMenuContent>
-</NavigationMenuItem>
+                <NavigationMenuLink asChild>
+                  <Link
+                    href="/summarizer/pdf"
+                    onClick={(e) => handleProtectedClick(e, "/summarizer/pdf")}
+                    className="block"
+                  >
+                    <SubMenuRow
+                      label="YouTube Video"
+                      icon={FaYoutube}
+                      description="Summarize your video"
+                    />
+                  </Link>
+                </NavigationMenuLink>
+              </div>
+            </NavigationMenuContent>
+          </NavigationMenuItem>
 
+          {/* Quiz */}
           <NavigationMenuItem>
-         <Link href="/quiz" onClick={(e) => handleProtectedClick(e, "/quiz")}>
-    <NavigationMenuTrigger>Quiz</NavigationMenuTrigger>
-  </Link>
-  <NavigationMenuContent>
-    <div className="px-3 py-2 min-w-[230px]">
-      <div className="font-semibold text-base mb-1">Quiz</div>
-      <div className="text-xs text-muted-foreground mb-2">
-        Generate quizzes for practice.
-      </div>
+            <Link
+              href="/quiz"
+              onClick={(e) => handleProtectedClick(e, "/quiz")}
+            >
+              <NavigationMenuTrigger>Quiz</NavigationMenuTrigger>
+            </Link>
+            <NavigationMenuContent>
+              <div className="px-3 py-2 min-w-[230px]">
+                <div className="font-semibold text-base mb-1">Quiz</div>
+                <div className="text-xs text-muted-foreground mb-2">
+                  Generate quizzes for practice.
+                </div>
 
-      <NavigationMenuLink asChild>
-        <Link
-          href="/quiz"
-          onClick={(e) => handleProtectedClick(e, "/quiz")}
-          className="block"
-        >
-          <SubMenuRow
-            label="PDF"
-            icon={FileText}
-            description="Quiz from your PDF"
-          />
-        </Link>
-      </NavigationMenuLink>
+                <NavigationMenuLink asChild>
+                  <Link
+                    href="/quiz"
+                    onClick={(e) => handleProtectedClick(e, "/quiz")}
+                    className="block"
+                  >
+                    <SubMenuRow
+                      label="PDF"
+                      icon={FileText}
+                      description="Quiz from your PDF"
+                    />
+                  </Link>
+                </NavigationMenuLink>
 
-      <NavigationMenuLink asChild>
-        <Link
-          href="/quiz"
-          onClick={(e) => handleProtectedClick(e, "/quiz")}
-          className="block"
-        >
-          <SubMenuRow
-            label="YouTube Video"
-            icon={FaYoutube}
-            description="Quiz from your video"
-          />
-        </Link>
-      </NavigationMenuLink>
+                <NavigationMenuLink asChild>
+                  <Link
+                    href="/quiz"
+                    onClick={(e) => handleProtectedClick(e, "/quiz")}
+                    className="block"
+                  >
+                    <SubMenuRow
+                      label="YouTube Video"
+                      icon={FaYoutube}
+                      description="Quiz from your video"
+                    />
+                  </Link>
+                </NavigationMenuLink>
 
-      <NavigationMenuLink asChild>
-        <Link
-          href="/quiz?source=text"
-          onClick={(e) => handleProtectedClick(e, "/quiz")}
-          className="block"
-        >
-          <SubMenuRow
-            label="Text"
-            icon={TextIcon}
-            description="Quiz from your text"
-          />
-        </Link>
-      </NavigationMenuLink>
-    </div>
-     </NavigationMenuContent>
-     </NavigationMenuItem>
-
+                <NavigationMenuLink asChild>
+                  <Link
+                    href="/quiz?source=text"
+                    onClick={(e) => handleProtectedClick(e, "/quiz")}
+                    className="block"
+                  >
+                    <SubMenuRow
+                      label="Text"
+                      icon={TextIcon}
+                      description="Quiz from your text"
+                    />
+                  </Link>
+                </NavigationMenuLink>
+              </div>
+            </NavigationMenuContent>
+          </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>
     </>

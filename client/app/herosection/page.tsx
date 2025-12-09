@@ -6,31 +6,30 @@ import Link from "next/link";
 import Workflow from "@/components/ui/workflow";
 import DiamondGridComponent from "@/components/ui/DiamondGridBackground";
 import { Sparkles } from "lucide-react";
-import { useAuth } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
+import { useAuth, RedirectToSignIn } from "@clerk/nextjs";
 
 export default function HeroSection() {
   const { isSignedIn } = useAuth();
-  const router = useRouter();
+  const [redirectTarget, setRedirectTarget] = React.useState<string | null>(null);
 
-   const handleProtectedClick = (
-  e: React.MouseEvent<HTMLAnchorElement>,
-  targetPath: string
-) => {
-  if (!isSignedIn) {
-    e.preventDefault();
-    const url = `/sign-in?redirect_url=${encodeURIComponent(targetPath)}`;
-    router.push(url);
-  }
-};
+  const handleProtectedClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    targetPath: string
+  ) => {
+    if (!isSignedIn) {
+      e.preventDefault();
+      setRedirectTarget(targetPath);
+    }
+  };
 
   return (
     <section className="relative min-h-screen w-full overflow-hidden bg-background">
+      {/* if user not signed in and clicked a protected button, trigger Clerk redirect */}
+      {redirectTarget && <RedirectToSignIn redirectUrl={redirectTarget} />}
+
       <DiamondGridComponent />
 
       <div className="relative z-10 flex flex-col items-center justify-start w-full min-h-screen pt-24 px-4 sm:px-6">
-        
-      
         <div className="inline-block mb-4 px-5 py-2 sm:px-6 sm:py-3 rounded-full bg-accent/10 border border-accent/30 backdrop-blur-sm">
           <span className="text-xs sm:text-sm font-medium bg-gradient-primary bg-clip-text text-foreground flex items-center gap-2">
             <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
@@ -38,7 +37,6 @@ export default function HeroSection() {
           </span>
         </div>
 
-        
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -48,7 +46,6 @@ export default function HeroSection() {
           Welcome to Acadlyst
         </motion.h1>
 
-        
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -58,7 +55,6 @@ export default function HeroSection() {
           AI Catalyst for Smarter Learning
         </motion.h1>
 
-        
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -69,7 +65,6 @@ export default function HeroSection() {
           summarize, explain, and quiz you instantly.
         </motion.p>
 
-        {/* Buttons */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -87,30 +82,27 @@ export default function HeroSection() {
           </motion.div>
 
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-           <Link
-           href="/qna/pdf"
-           onClick={(e) => handleProtectedClick(e, "/qna/pdf")}
-           className="
-            inline-block rounded-4xl text-base sm:text-lg px-8 py-2
-            border-2 border-accent text-accent font-semibold
-            transition-all duration-150
-            shadow-[0_0_12px_rgba(244,114,182,0.25)]
-            hover:bg-accent hover:text-white hover:shadow-[0_0_18px_rgba(244,114,182,0.45)]
-            focus:outline-none focus:ring-2 focus:ring-rose-400
-            animate-[borderGlow_2.2s_ease-in-out_infinite]
-          "
+            <Link
+              href="/qna/pdf"
+              onClick={(e) => handleProtectedClick(e, "/qna/pdf")}
+              className="
+                inline-block rounded-4xl text-base sm:text-lg px-8 py-2
+                border-2 border-accent text-accent font-semibold
+                transition-all duration-150
+                shadow-[0_0_12px_rgba(244,114,182,0.25)]
+                hover:bg-accent hover:text-white hover:shadow-[0_0_18px_rgba(244,114,182,0.45)]
+                focus:outline-none focus:ring-2 focus:ring-rose-400
+                animate-[borderGlow_2.2s_ease-in-out_infinite]
+              "
             >
-          Chat
-          </Link>
-
+              Chat
+            </Link>
           </motion.div>
         </motion.div>
 
-        
         <div className="hidden md:block w-full h-[46vh] sm:h-[40vh] mt-0">
           <Workflow />
         </div>
-
       </div>
     </section>
   );
