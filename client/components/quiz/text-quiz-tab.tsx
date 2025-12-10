@@ -164,7 +164,7 @@ export default function TextQuizTab() {
       <UpgradeModal
         open={showUpgrade}
         onClose={() => setShowUpgrade(false)}
-        feature="summarizer"
+        feature="quiz"
       />
     </>
   );

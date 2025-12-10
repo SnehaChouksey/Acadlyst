@@ -206,7 +206,7 @@ export default function YoutubeQuizTab() {
       <UpgradeModal 
         open={showUpgrade} 
         onClose={() => setShowUpgrade(false)}
-        feature="summarizer"
+        feature="quiz"
       />
     </>
   );

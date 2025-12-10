@@ -131,7 +131,7 @@ export default function QA() {
             </div>
 
             <div className="self-start md:self-auto">
-              <FileUploadComponent onUploaded={handleFileUploaded} />
+              <FileUploadComponent feature="chat" onUploaded={handleFileUploaded} />
             </div>
           </div>
 
@@ -144,7 +144,7 @@ export default function QA() {
           )}
 
           {uploadStatus && (
-            <div className="mx-4 sm:mx-8 mt-2 p-3 bg-green-600/20 border-l-4 border-green-600 rounded text-green-300 flex items-center gap-2 text-sm">
+            <div className="mx-4 sm:mx-8 mt-2 p-3 bg-green-600/20 border-l-4 border-green-600 rounded text-green-700 flex items-center gap-2 text-sm dark:text-green-300">
               <CheckCircle className="h-5 w-5" />
               {uploadStatus}
             </div>

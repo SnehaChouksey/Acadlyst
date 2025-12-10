@@ -213,6 +213,11 @@ function checkCreditsForFeature(user, feature) {
 }
 
 export async function deductCredits(clerkId, feature) {
+  console.log("🔻 deductCredits CALLED", {
+    clerkId,
+    feature,
+    time: new Date().toISOString(),
+  });
   try {
     const user = await prisma.user.findUnique({
       where: { clerkId },

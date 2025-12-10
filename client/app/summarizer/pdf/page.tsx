@@ -41,37 +41,26 @@ export default function SummarizerPage() {
   // BACKEND LOGIC
   // -----------------------------
 
-  const handleFileUpload = async (data: { file: File; response: any }) => {
-    try {
-      setLoading(true);
-      setPdfSummary(null);
-      setError("");
+   const handleFileUpload = async (data: { file: File; response: any }) => {
+  try {
+    setLoading(true);
+    setPdfSummary(null);
+    setError("");
 
-      const formData = new FormData();
-      formData.append("pdf", data.file);
+    const uploadResponse = data.response; // already from /summarizer/pdf
 
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/summarizer/pdf`,
-        {
-          method: "POST",
-          headers: { "x-clerk-id": userId || "" },
-          body: formData,
-        }
-      );
-
-      if (res.status === 403) {
-        setShowUpgrade(true);
-        return;
-      }
-
-      const uploadResponse = await res.json();
-      if (uploadResponse.jobId) pollJobStatus(uploadResponse.jobId);
-    } catch (error) {
-      console.error("Summary Error:", error);
-      alert("Error generating summary. Please try again.");
+    if (uploadResponse.jobId) {
+      pollJobStatus(uploadResponse.jobId);
+    } else {
       setLoading(false);
     }
-  };
+  } catch (error) {
+    console.error("Summary Error:", error);
+    alert("Error generating summary. Please try again.");
+    setLoading(false);
+  }
+};
+
 
   const handleYoutubeSubmit = async () => {
     if (!youtubeUrl.trim()) {
@@ -243,7 +232,7 @@ export default function SummarizerPage() {
               <TabsContent value="pdf" className="flex-1 flex flex-col">
                 {!pdfSummary && !loading && (
                   <div className="flex-1 flex flex-col justify-centre items-center border-2 border-accent rounded-xl p-37 bg-background/30">
-                    <FileUploadComponent onUploaded={handleFileUpload} />
+                    <FileUploadComponent feature="summarizer" onUploaded={handleFileUpload} />
                   </div>
                 )}
 

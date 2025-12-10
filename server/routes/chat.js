@@ -90,7 +90,7 @@ router.post("/", async (req, res) => {
     // STEP 5: Generate answer using LLM
     console.log("STEP 5: Calling Gemini LLM...");
     const llm = new ChatGoogleGenerativeAI({
-      model: "gemini-2.5-flash",
+      model: "gemini-2.5-flash-lite",
       maxRetries: 1,
       temperature: 0.2,
       apiKey: process.env.GOOGLE_API_KEY,

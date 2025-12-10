@@ -29,35 +29,24 @@ export default function PdfQuizTab() {
   const [loading, setLoading] = useState(false);
 
   const handleFileUpload = async (data: { file: File; response: any }) => {
-    try {
-      setLoading(true);
-      setQuiz(null);
+  try {
+    setLoading(true);
+    setQuiz(null);
 
-      const formData = new FormData();
-      formData.append('pdf', data.file);
+    const uploadResponse = data.response; // already from /quiz/pdf
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz/pdf`, {
-        method: 'POST',
-        headers: { 'x-clerk-id': userId || '' },
-        body: formData,
-      });
-
-      if (res.status === 403) {
-        setShowUpgrade(true);
-        setLoading(false);
-        return;
-      }
-
-      const uploadResponse = await res.json();
-
-      if (uploadResponse.jobId) pollJobStatus(uploadResponse.jobId);
-      else setLoading(false);
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Error generating quiz. Please try again.');
+    if (uploadResponse.jobId) {
+      pollJobStatus(uploadResponse.jobId);
+    } else {
       setLoading(false);
     }
-  };
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Error generating quiz. Please try again.');
+    setLoading(false);
+  }
+};
+
 
   const pollJobStatus = async (jobId: string) => {
     const maxAttempts = 120;
@@ -111,7 +100,7 @@ export default function PdfQuizTab() {
               </p>
 
               <div className="w-full max-w-sm mx-auto">
-                <FileUploadComponent onUploaded={handleFileUpload} />
+                <FileUploadComponent feature="quiz" onUploaded={handleFileUpload} />
               </div>
             </div>
           </CardContent>
@@ -150,7 +139,7 @@ export default function PdfQuizTab() {
       <UpgradeModal
         open={showUpgrade}
         onClose={() => setShowUpgrade(false)}
-        feature="summarizer"
+        feature="quiz"
       />
     </>
   );
