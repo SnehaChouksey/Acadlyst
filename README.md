@@ -47,13 +47,16 @@ Acadlyst is an AI-powered academic assistant SaaS platform built for students. I
 - Node.js + Express
 - Prisma + PostgreSQL (Neon)
 - BullMQ + Upstash Redis
-- Google  API (embeddings, LLM)
-- Qdrant Cloud (vector search/RAG)
 - Cloudinary (file uploads)
 - pdf-parse (PDF extraction)
-- YouTube Transcript API
 - Multer (file handling)
 
+**Generative AI**
+- Langchain
+- Google  API (embeddings, LLM)
+- Qdrant (vector database)
+- YouTube Transcript API
+  
 **DevOps & Deployment**
 - Vercel (frontend hosting)
 - Render (backend API + worker)
