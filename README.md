@@ -1,9 +1,9 @@
 
 # 📚 Acadlyst
 
-Acadlyst is an AI-powered academic assistant SaaS platform built for students. It combines RAG-based document Q&A, smart summarization, and auto-generated quizzes—all in a professional, intuitive workflow.
+Acadlyst is an AI-powered academic assistant SaaS platform built for students. It combines RAG-based document Q&A, smart summarization, and auto-generated quizzes,all in a professional, intuitive workflow.
 
-🌐 **Live Demo:**  acadlyst-opal.vercel.app
+🌐 **Live Demo:**  https://acadlyst-opal.vercel.app/
 
 ---
 
