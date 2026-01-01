@@ -226,7 +226,7 @@ If you prefer containerized deployment:
 3. Wait for "Processing started" message
 4. Ask questions in the chat interface
 5. Get answers with source citations and page numbers
-6. 5. Access saved chats from sidebar for revision.
+6. Access saved chats from sidebar for revision.
 
 
 ### **AI Summarizer**
