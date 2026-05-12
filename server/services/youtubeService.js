@@ -1,46 +1,36 @@
-import { Innertube } from 'youtubei.js';
+import { YoutubeTranscript } from 'youtube-transcript';
 
 export async function getYouTubeTranscript(url) {
+  const videoId = extractVideoId(url);
+  if (!videoId) {
+    throw new Error('Invalid YouTube URL format. Please use a valid YouTube link.');
+  }
+
+  console.log("Fetching transcript for video ID:", videoId);
+
   try {
-    const videoId = extractVideoId(url);
-    if (!videoId) {
-      throw new Error('Invalid YouTube URL format. Please use a valid YouTube link.');
+    const segments = await YoutubeTranscript.fetchTranscript(videoId);
+
+    if (!segments || segments.length === 0) {
+      throw new Error('This video does not have captions available. Please try a different video with captions enabled.');
     }
 
-    console.log("Fetching transcript for video ID:", videoId);
-    
-    try {
-      const youtube = await Innertube.create();
-      const info = await youtube.getInfo(videoId);
-      
-      const transcriptData = await info.getTranscript();
-      
-      if (!transcriptData || !transcriptData.transcript) {
-        throw new Error('This video does not have captions available. Please try a different video with captions enabled.');
-      }
+    const fullText = segments.map(s => s.text).join(' ');
 
-      const fullText = transcriptData.transcript.content.body.initial_segments
-        .map(segment => segment.snippet.text)
-        .join(' ');
-
-      if (!fullText || fullText.trim().length === 0) {
-        throw new Error('Could not extract text from captions.');
-      }
-
-      console.log("Transcript fetched successfully. Length:", fullText.length, "chars");
-      
-      return {
-        text: fullText,
-        videoId: videoId,
-        length: fullText.length
-      };
-    } catch (transcriptError) {
-      console.error("Transcript fetch error:", transcriptError);
-      throw new Error('Could not fetch transcript. Please ensure the video has captions enabled and try again.');
+    if (!fullText || fullText.trim().length === 0) {
+      throw new Error('Could not extract text from captions.');
     }
+
+    console.log("Transcript fetched successfully. Length:", fullText.length, "chars");
+
+    return {
+      text: fullText,
+      videoId: videoId,
+      length: fullText.length
+    };
   } catch (error) {
-    console.error("YouTube transcript error:", error);
-    throw error;
+    console.error("Transcript fetch error:", error);
+    throw new Error('Could not fetch transcript. Please ensure the video has captions enabled and try again.');
   }
 }
 
