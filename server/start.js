@@ -1,20 +1,39 @@
-import { fork } from 'child_process';
+import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { dirname } from 'path';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+const dir = dirname(fileURLToPath(import.meta.url));
 
 console.log('Starting server and worker...');
 
-const server = fork(join(__dirname, 'index.js'), [], { stdio: 'inherit' });
-const worker = fork(join(__dirname, 'worker.js'), [], { stdio: 'inherit' });
+const server = spawn(process.execPath, ['index.js'], {
+  stdio: 'inherit',
+  cwd: dir,
+  env: process.env,
+});
 
-server.on('exit', (code) => {
+const worker = spawn(process.execPath, ['worker.js'], {
+  stdio: 'inherit',
+  cwd: dir,
+  env: process.env,
+});
+
+server.on('error', (err) => {
+  console.error('Failed to start server:', err.message);
+  process.exit(1);
+});
+
+worker.on('error', (err) => {
+  console.error('Failed to start worker:', err.message);
+  process.exit(1);
+});
+
+server.on('close', (code) => {
   console.error('Server exited with code:', code);
   process.exit(code ?? 1);
 });
 
-worker.on('exit', (code) => {
+worker.on('close', (code) => {
   console.error('Worker exited with code:', code);
   process.exit(code ?? 1);
 });
