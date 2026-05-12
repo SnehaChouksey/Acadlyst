@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "prisma generate",
-    "start": "prisma generate && node index.js & node worker.js & wait",
+    "start": "node index.js & node worker.js & wait",
     "dev": "node --watch index.js",
     "dev:worker": "node --watch worker.js"
   },
