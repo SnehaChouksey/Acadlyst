@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "prisma generate",
+    "start": "node start.js",
     "dev": "node --watch index.js",
     "dev:worker": "node --watch worker.js"
   },
@@ -36,7 +37,7 @@
     "prisma": "^6.19.0",
     "stripe": "^19.3.0",
     "svix": "^1.81.0",
-    "youtubei.js": "^16.0.1"
+    "youtubei.js": "^17.0.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.5",
