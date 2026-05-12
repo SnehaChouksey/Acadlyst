@@ -1,4 +1,4 @@
-import { YoutubeTranscript } from 'youtube-transcript';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export async function getYouTubeTranscript(url) {
   const videoId = extractVideoId(url);
@@ -9,19 +9,28 @@ export async function getYouTubeTranscript(url) {
   console.log("Fetching transcript for video ID:", videoId);
 
   try {
-    const segments = await YoutubeTranscript.fetchTranscript(videoId);
+    const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    if (!segments || segments.length === 0) {
-      throw new Error('This video does not have captions available. Please try a different video with captions enabled.');
-    }
+    const result = await model.generateContent([
+      {
+        fileData: {
+          mimeType: "video/youtube",
+          fileUri: `https://www.youtube.com/watch?v=${videoId}`,
+        }
+      },
+      {
+        text: "Provide a complete verbatim transcript of all spoken words in this video. Return only the transcript text with no timestamps, labels, or commentary."
+      }
+    ]);
 
-    const fullText = segments.map(s => s.text).join(' ');
+    const fullText = result.response.text();
 
     if (!fullText || fullText.trim().length === 0) {
-      throw new Error('Could not extract text from captions.');
+      throw new Error('Could not extract transcript from this video.');
     }
 
-    console.log("Transcript fetched successfully. Length:", fullText.length, "chars");
+    console.log("Transcript extracted via Gemini. Length:", fullText.length, "chars");
 
     return {
       text: fullText,
@@ -30,7 +39,7 @@ export async function getYouTubeTranscript(url) {
     };
   } catch (error) {
     console.error("Transcript fetch error:", error);
-    throw new Error('Could not fetch transcript. Please ensure the video has captions enabled and try again.');
+    throw new Error('Could not fetch transcript. Please ensure the video is publicly accessible and try again.');
   }
 }
 
