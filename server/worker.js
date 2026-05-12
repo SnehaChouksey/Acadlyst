@@ -450,11 +450,16 @@ Respond in this EXACT JSON format ONLY:
           title: "PDF Document Chunk",
         });
 
-        await QdrantVectorStore.fromDocuments(docs, embeddings, {
-          url: process.env.QDRANT_URL || "http://localhost:6333",
-          apiKey: process.env.QDRANT_API_KEY || undefined,
-          collectionName: "langchainjs-testing",
-        });
+        const vectorStore = await QdrantVectorStore.fromExistingCollection(
+          embeddings,
+          {
+            url: process.env.QDRANT_URL || "http://localhost:6333",
+            apiKey: process.env.QDRANT_API_KEY || undefined,
+            collectionName: "langchainjs-testing",
+          }
+        );
+
+        await vectorStore.addDocuments(docs);
         console.log(`Qdrant Insert - Stored ${docs.length} chunks`);
       }
 
