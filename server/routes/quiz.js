@@ -20,8 +20,8 @@ const queue = new Queue("file-upload-queue", {
   connection: {
     host: process.env.REDIS_HOST,
     port: parseInt(process.env.REDIS_PORT),
-    password: process.env.REDIS_PASSWORD,
-    tls: {}
+    password: process.env.REDIS_PASSWORD || undefined,
+    ...(process.env.REDIS_HOST !== "localhost" && { tls: {} }),
   }
 });
 

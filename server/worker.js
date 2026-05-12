@@ -450,16 +450,11 @@ Respond in this EXACT JSON format ONLY:
           title: "PDF Document Chunk",
         });
 
-        const vectorStore = await QdrantVectorStore.fromExistingCollection(
-          embeddings,
-          {
-            url: process.env.QDRANT_URL || "http://localhost:6333",
-            apiKey: process.env.QDRANT_API_KEY,
-            collectionName: "langchainjs-testing",
-          }
-        );
-
-        await vectorStore.addDocuments(docs);
+        await QdrantVectorStore.fromDocuments(docs, embeddings, {
+          url: process.env.QDRANT_URL || "http://localhost:6333",
+          apiKey: process.env.QDRANT_API_KEY || undefined,
+          collectionName: "langchainjs-testing",
+        });
         console.log(`Qdrant Insert - Stored ${docs.length} chunks`);
       }
 
@@ -476,8 +471,8 @@ Respond in this EXACT JSON format ONLY:
     connection: {
       host: process.env.REDIS_HOST,
       port: parseInt(process.env.REDIS_PORT || "6379"),
-      password: process.env.REDIS_PASSWORD,
-      tls: {}
+      password: process.env.REDIS_PASSWORD || undefined,
+      ...(process.env.REDIS_HOST !== "localhost" && { tls: {} }),
     }
   }
 );

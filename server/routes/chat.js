@@ -46,7 +46,7 @@ router.post("/", async (req, res) => {
       embeddings,
       {
         url: process.env.QDRANT_URL || "http://localhost:6333",
-        apiKey: process.env.QDRANT_API_KEY,
+        apiKey: process.env.QDRANT_API_KEY || undefined,
         collectionName: "langchainjs-testing",
       }
     );
