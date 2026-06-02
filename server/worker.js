@@ -4,7 +4,7 @@ import fs from "fs";
 import { Worker } from "bullmq";
 import axios from "axios"; 
 import { HuggingFaceInferenceEmbeddings } from "@langchain/community/embeddings/hf";
-import { ChatGroq } from "@langchain/groq";
+import { ChatOpenAI } from "@langchain/openai";
 import { QdrantVectorStore } from "@langchain/qdrant";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 
@@ -102,11 +102,12 @@ const worker = new Worker(
         }
 
         const textLength = sourceText.length;
-        const llm = new ChatGroq({
+        const llm = new ChatOpenAI({
           model: "llama-3.3-70b-versatile",
           maxRetries: 1,
           temperature: 0.3,
           apiKey: process.env.GROQ_API_KEY,
+          configuration: { baseURL: "https://api.groq.com/openai/v1" },
         });
 
         let summaryData;
@@ -255,11 +256,12 @@ Respond in this exact JSON format ONLY:
           const textLength = sourceText.length;
           console.log("Text length:", textLength, "chars");
 
-          const llm = new ChatGroq({
+          const llm = new ChatOpenAI({
             model: "llama-3.3-70b-versatile",
             maxRetries: 1,
             temperature: 0.5,
             apiKey: process.env.GROQ_API_KEY,
+            configuration: { baseURL: "https://api.groq.com/openai/v1" },
           });
 
           let quizData;

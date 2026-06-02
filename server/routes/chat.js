@@ -1,7 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import { HuggingFaceInferenceEmbeddings } from "@langchain/community/embeddings/hf";
-import { ChatGroq } from "@langchain/groq";
+import { ChatOpenAI } from "@langchain/openai";
 import { QdrantVectorStore } from "@langchain/qdrant";
 import { checkChatMessageCredits, deductChatMessageCredits } from "../services/userService.js";
 import { PrismaClient } from '@prisma/client';
@@ -87,11 +87,12 @@ router.post("/", async (req, res) => {
 
     // STEP 5: Generate answer using LLM
     console.log("STEP 5: Calling Gemini LLM...");
-    const llm = new ChatGroq({
+    const llm = new ChatOpenAI({
       model: "llama-3.3-70b-versatile",
       maxRetries: 1,
       temperature: 0.2,
       apiKey: process.env.GROQ_API_KEY,
+      configuration: { baseURL: "https://api.groq.com/openai/v1" },
     });
 
     // ✅ DECLARE response BEFORE using it
