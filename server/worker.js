@@ -3,7 +3,7 @@ import pdf from "pdf-parse";
 import fs from "fs";
 import { Worker } from "bullmq";
 import axios from "axios"; 
-import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
+import { OpenAIEmbeddings } from "@langchain/openai";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { QdrantVectorStore } from "@langchain/qdrant";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
@@ -442,9 +442,9 @@ Respond in this EXACT JSON format ONLY:
           };
         });
 
-        const embeddings = new GoogleGenerativeAIEmbeddings({
-          model: "text-embedding-004",
-          apiKey: process.env.GOOGLE_API_KEY,
+        const embeddings = new OpenAIEmbeddings({
+          model: "text-embedding-3-small",
+          apiKey: process.env.OPENAI_API_KEY,
         });
 
         const vectorStore = await QdrantVectorStore.fromExistingCollection(

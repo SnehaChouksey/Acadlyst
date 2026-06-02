@@ -1,6 +1,6 @@
 import "dotenv/config";
 import express from "express";
-import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
+import { OpenAIEmbeddings } from "@langchain/openai";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { QdrantVectorStore } from "@langchain/qdrant";
 import { checkChatMessageCredits, deductChatMessageCredits } from "../services/userService.js";
@@ -33,9 +33,9 @@ router.post("/", async (req, res) => {
 
     // STEP 1: Create embeddings for query
     console.log("STEP 1: Creating embeddings...");
-    const embeddings = new GoogleGenerativeAIEmbeddings({
-      model: "text-embedding-004",
-      apiKey: process.env.GOOGLE_API_KEY,
+    const embeddings = new OpenAIEmbeddings({
+      model: "text-embedding-3-small",
+      apiKey: process.env.OPENAI_API_KEY,
     });
 
     // STEP 2: Connect to Qdrant
