@@ -3,7 +3,6 @@ import express from "express";
 import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { QdrantVectorStore } from "@langchain/qdrant";
-import { TaskType } from "@google/generative-ai";
 import { checkChatMessageCredits, deductChatMessageCredits } from "../services/userService.js";
 import { PrismaClient } from '@prisma/client';
 
@@ -35,9 +34,8 @@ router.post("/", async (req, res) => {
     // STEP 1: Create embeddings for query
     console.log("STEP 1: Creating embeddings...");
     const embeddings = new GoogleGenerativeAIEmbeddings({
-      model: "gemini-embedding-001",
+      model: "text-embedding-004",
       apiKey: process.env.GOOGLE_API_KEY,
-      taskType: TaskType.RETRIEVAL_DOCUMENT,
     });
 
     // STEP 2: Connect to Qdrant

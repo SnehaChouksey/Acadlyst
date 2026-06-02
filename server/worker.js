@@ -5,7 +5,6 @@ import { Worker } from "bullmq";
 import axios from "axios"; 
 import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
-import { TaskType } from "@google/generative-ai";
 import { QdrantVectorStore } from "@langchain/qdrant";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 
@@ -444,10 +443,8 @@ Respond in this EXACT JSON format ONLY:
         });
 
         const embeddings = new GoogleGenerativeAIEmbeddings({
-          model: "gemini-embedding-001",
-          taskType: TaskType.RETRIEVAL_DOCUMENT,
+          model: "text-embedding-004",
           apiKey: process.env.GOOGLE_API_KEY,
-          title: "PDF Document Chunk",
         });
 
         const vectorStore = await QdrantVectorStore.fromExistingCollection(

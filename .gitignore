@@ -21,3 +21,15 @@ logs/
 # system junk
 .DS_Store
 Thumbs.db
+
+# Word documents
+*.docx
+*.doc
+
+# Claude Code settings
+.claude/
+
+# Misc project files
+PROJECT_REPORT.md
+generate_report.py
+implementation_plan.md.resolved
