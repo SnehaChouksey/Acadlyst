@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { YoutubeTranscript } from "youtube-transcript";
 
 export async function getYouTubeTranscript(url) {
   const videoId = extractVideoId(url);
@@ -9,28 +9,14 @@ export async function getYouTubeTranscript(url) {
   console.log("Fetching transcript for video ID:", videoId);
 
   try {
-    const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const transcriptItems = await YoutubeTranscript.fetchTranscript(videoId);
 
-    const result = await model.generateContent([
-      {
-        fileData: {
-          mimeType: "video/youtube",
-          fileUri: `https://www.youtube.com/watch?v=${videoId}`,
-        }
-      },
-      {
-        text: "Provide a complete verbatim transcript of all spoken words in this video. Return only the transcript text with no timestamps, labels, or commentary."
-      }
-    ]);
-
-    const fullText = result.response.text();
-
-    if (!fullText || fullText.trim().length === 0) {
-      throw new Error('Could not extract transcript from this video.');
+    if (!transcriptItems || transcriptItems.length === 0) {
+      throw new Error('No transcript available for this video.');
     }
 
-    console.log("Transcript extracted via Gemini. Length:", fullText.length, "chars");
+    const fullText = transcriptItems.map(item => item.text).join(' ');
+    console.log("Transcript fetched. Length:", fullText.length, "chars");
 
     return {
       text: fullText,
@@ -39,7 +25,7 @@ export async function getYouTubeTranscript(url) {
     };
   } catch (error) {
     console.error("Transcript fetch error:", error);
-    throw new Error('Could not fetch transcript. Please ensure the video is publicly accessible and try again.');
+    throw new Error('Could not fetch transcript. Please ensure the video has captions enabled and is publicly accessible.');
   }
 }
 

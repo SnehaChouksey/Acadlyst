@@ -4,7 +4,7 @@ import fs from "fs";
 import { Worker } from "bullmq";
 import axios from "axios"; 
 import { HuggingFaceInferenceEmbeddings } from "@langchain/community/embeddings/hf";
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { ChatGroq } from "@langchain/groq";
 import { QdrantVectorStore } from "@langchain/qdrant";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 
@@ -102,11 +102,11 @@ const worker = new Worker(
         }
 
         const textLength = sourceText.length;
-        const llm = new ChatGoogleGenerativeAI({
-          model: "gemini-2.5-flash",
+        const llm = new ChatGroq({
+          model: "llama-3.3-70b-versatile",
           maxRetries: 1,
           temperature: 0.3,
-          apiKey: process.env.GOOGLE_API_KEY,
+          apiKey: process.env.GROQ_API_KEY,
         });
 
         let summaryData;
@@ -255,11 +255,11 @@ Respond in this exact JSON format ONLY:
           const textLength = sourceText.length;
           console.log("Text length:", textLength, "chars");
 
-          const llm = new ChatGoogleGenerativeAI({
-            model: "gemini-2.5-flash",
+          const llm = new ChatGroq({
+            model: "llama-3.3-70b-versatile",
             maxRetries: 1,
             temperature: 0.5,
-            apiKey: process.env.GOOGLE_API_KEY,
+            apiKey: process.env.GROQ_API_KEY,
           });
 
           let quizData;
